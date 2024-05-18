@@ -243,9 +243,7 @@ namespace rm_decision {
         //for bt
         int color; //1 red 2 blue
         bool gamestart = false;
-        bool dafu = false;
         bool outpose = false;
-        bool base = false;
         float self_hp = 400;
         float self_ammo = 400;
         float self_base = 400;
@@ -255,9 +253,7 @@ namespace rm_decision {
         float goldcoin;
         int buy_ammo;
         int buy_hp = 0;
-        bool dafu_order_goal_reached = false; //在目标模式后，达到目标点之后的标识位
         bool outpose_order_goal_reached = false;
-        bool base_order_goal_reached = false;
         bool defend_order_goal_reached = false;
         int strategy;
         bool addhp_ordered;
@@ -307,24 +303,20 @@ namespace rm_decision {
         void mygimbal_handle() {
             std::cout << "mygimbal_handle is called" << std::endl;
         }
-
-        void mydafu_handle() {
-            order = true;
-            if (!dafu_order_goal_reached) {
-                std::cout << "dafu_handle is called" << std::endl;
-                goal.header.stamp = this->now();
-                goal.header.frame_id = "map";
-                goal.pose.position.x = dafu_point_[0].pose.position.x;
-                goal.pose.position.y = dafu_point_[0].pose.position.y;
-                goal.pose.position.z = dafu_point_[0].pose.position.z;
-                goal.pose.orientation.x = 0.0;
-                goal.pose.orientation.y = 0.0;
-                goal.pose.orientation.z = 0.0;
-                goal.pose.orientation.w = 1.0;
-                setState(std::make_shared<GoAndStayState>(this));
-                dafu_order_goal_reached = true;
-            } else
-                setState(std::make_shared<MoveState>(this));
+        void myGoToEnemyOutpose_handle() {
+            std::cout << "mygimbal_handle is called" << std::endl;
+        }
+        void myGoToStopEngineer_handle() {
+            std::cout << "mygimbal_handle is called" << std::endl;
+        }
+        void myGoToStopHero_handle() {
+            std::cout << "mygimbal_handle is called" << std::endl;
+        }
+        void myS2GoToOutpose() {
+            std::cout << "mygimbal_handle is called" << std::endl;
+        }
+        void myS3Patro(){
+            std::cout << "myS3Patro" << std::endl;
         }
 
         void myoutpose_handle() {
@@ -346,24 +338,6 @@ namespace rm_decision {
                 setState(std::make_shared<MoveState>(this));
         }
 
-        void mybase_handle() {
-            order = true;
-            if (!base_order_goal_reached) {
-                std::cout << "base_handle is called" << std::endl;
-                goal.header.stamp = this->now();
-                goal.header.frame_id = "map";
-                goal.pose.position.x = enemy_base_point_[0].pose.position.x;
-                goal.pose.position.y = enemy_base_point_[0].pose.position.y;
-                goal.pose.position.z = enemy_base_point_[0].pose.position.z;
-                goal.pose.orientation.x = 0.0;
-                goal.pose.orientation.y = 0.0;
-                goal.pose.orientation.z = 0.0;
-                goal.pose.orientation.w = 1.0;
-                setState(std::make_shared<GoAndStayState>(this));
-                base_order_goal_reached = true;
-            } else
-                setState(std::make_shared<MoveState>(this));
-        }
 
         // 上面都是进攻的
         void myaddhp_handle() {
@@ -452,14 +426,7 @@ namespace rm_decision {
             return BT::NodeStatus::SUCCESS;
         }
 
-        BT::NodeStatus dafu_ordered() {
-            if (dafu) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                dafu_order_goal_reached = false;
-                return BT::NodeStatus::FAILURE;
-            }
-        }
+
 
         BT::NodeStatus outpose_ordered() {
             if (outpose) {
@@ -470,14 +437,6 @@ namespace rm_decision {
             }
         }
 
-        BT::NodeStatus base_ordered() {
-            if (base) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                base_order_goal_reached = false;
-                return BT::NodeStatus::FAILURE;
-            }
-        }
 
         BT::NodeStatus IfAddHp() {
             if (self_hp <= 150) {
@@ -535,6 +494,32 @@ namespace rm_decision {
             else return BT::NodeStatus::FAILURE;
         }
 
+        BT::NodeStatus IfBuyAmmo() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus IfGoToEnemyOutpose() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus IfGoToStopEngineer() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus IfGoToStopHero() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus IfOutposeAlive() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus S1() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus S2() {
+            return BT::NodeStatus::FAILURE;
+        }
+        BT::NodeStatus S3() {
+            return BT::NodeStatus::FAILURE;
+        }
+
+
 
         BT::NodeStatus Gimbal_handle() {
             mygimbal_handle();
@@ -542,14 +527,7 @@ namespace rm_decision {
         }
 
 
-        BT::NodeStatus dafu_handle() {
-            mydafu_handle();
-            if (nav_state == 1) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
-            }
-        }
+
 
         BT::NodeStatus outpose_handle() {
             myoutpose_handle();
@@ -560,14 +538,7 @@ namespace rm_decision {
             }
         }
 
-        BT::NodeStatus base_handle() {
-            mybase_handle();
-            if (nav_state == 1) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
-            }
-        }
+
 
         BT::NodeStatus addhp_handle() {
             myaddhp_handle();
@@ -596,7 +567,7 @@ namespace rm_decision {
             }
         }
 
-        BT::NodeStatus Guard_handle() {
+        BT::NodeStatus Guard() {
             myguard_handle();
             return BT::NodeStatus::SUCCESS;
         }
@@ -618,6 +589,32 @@ namespace rm_decision {
 
         BT::NodeStatus BuyHp_handle() {
             mybuyhp_handle();
+            return BT::NodeStatus::SUCCESS;
+        }
+
+        BT::NodeStatus GoToEnemyOutpose_handle() {
+            myGoToEnemyOutpose_handle();
+            return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus BuyAmmo_handle() {
+            myGoToEnemyOutpose_handle();
+            return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus GoToStopEngineer_handle() {
+            myGoToStopEngineer_handle();
+            return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus GoToStopHero_handle() {
+            myGoToStopHero_handle();
+            return BT::NodeStatus::SUCCESS;
+        }
+
+        BT::NodeStatus S2GoToOutpose() {
+            myS2GoToOutpose();
+            return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus S3Patro() {
+            myS3Patro();
             return BT::NodeStatus::SUCCESS;
         }
 

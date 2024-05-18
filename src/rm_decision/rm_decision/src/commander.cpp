@@ -81,32 +81,41 @@ namespace rm_decision {
         rclcpp::Rate r(0.5);
         // behavetree init
         BT::BehaviorTreeFactory factory;
-        factory.registerSimpleCondition("wait_for_start", std::bind(&Commander::wait_for_start, this));
-        factory.registerSimpleCondition("dafu_ordered", std::bind(&Commander::dafu_ordered, this));
-        factory.registerSimpleCondition("outpose_ordered", std::bind(&Commander::outpose_ordered, this));
-        factory.registerSimpleCondition("base_ordered", std::bind(&Commander::base_ordered, this));
         factory.registerSimpleCondition("IfAddHp", std::bind(&Commander::IfAddHp, this));
-        factory.registerSimpleCondition("IfDefend", std::bind(&Commander::IfDefend, this));
-        factory.registerSimpleCondition("IfAttack", std::bind(&Commander::IfAttack, this));
-        factory.registerSimpleCondition("IfGuard", std::bind(&Commander::IfGuard, this));
         factory.registerSimpleCondition("IfAsked", std::bind(&Commander::IfAsked, this));
-        factory.registerSimpleCondition("IfBuyToRelive", std::bind(&Commander::IfBuyToRelive, this));
+        factory.registerSimpleCondition("IfAttack", std::bind(&Commander::IfAttack, this));
+        factory.registerSimpleCondition("IfBuyAmmo", std::bind(&Commander::IfBuyAmmo, this));
         factory.registerSimpleCondition("IfBuyAmmoRemotely", std::bind(&Commander::IfBuyAmmoRemotely, this));
         factory.registerSimpleCondition("IfBuyHp", std::bind(&Commander::IfBuyHp, this));
+        factory.registerSimpleCondition("IfBuyToRelive", std::bind(&Commander::IfBuyToRelive, this));
+        factory.registerSimpleCondition("IfDefend", std::bind(&Commander::IfDefend, this));
+        factory.registerSimpleCondition("IfGoToEnemyOutpose", std::bind(&Commander::IfGoToEnemyOutpose, this));
+        factory.registerSimpleCondition("IfGoToStopEngineer", std::bind(&Commander::IfGoToStopEngineer, this));
+        factory.registerSimpleCondition("IfGoToStopHero", std::bind(&Commander::IfGoToStopHero, this));
+        factory.registerSimpleCondition("IfGuard", std::bind(&Commander::IfGuard, this));
+        factory.registerSimpleCondition("IfOutposeAlive", std::bind(&Commander::IfOutposeAlive, this));
+        factory.registerSimpleCondition("S1", std::bind(&Commander::S1, this));
+        factory.registerSimpleCondition("S2", std::bind(&Commander::S2, this));
+        factory.registerSimpleCondition("S3", std::bind(&Commander::S3, this));
+        factory.registerSimpleCondition("outpose_ordered", std::bind(&Commander::outpose_ordered, this));
+        factory.registerSimpleCondition("wait_for_start", std::bind(&Commander::wait_for_start, this));
 
-        factory.registerSimpleAction("dafu_handle", std::bind(&Commander::dafu_handle, this));
-        factory.registerSimpleAction("outpose_handle", std::bind(&Commander::outpose_handle, this));
-        factory.registerSimpleAction("base_handle", std::bind(&Commander::base_handle, this));
-        factory.registerSimpleAction("addhp_handle", std::bind(&Commander::addhp_handle, this));
-        factory.registerSimpleAction("defend_handle", std::bind(&Commander::defend_handle, this));
-        factory.registerSimpleAction("attack_handle", std::bind(&Commander::attack_handle, this));
-        factory.registerSimpleAction("Guard", std::bind(&Commander::Guard_handle, this));
-        factory.registerSimpleAction("MoveAround", std::bind(&Commander::MoveAround_handle, this));
-
-        factory.registerSimpleAction("Gimbal_handle", std::bind(&Commander::Gimbal_handle, this));
-        factory.registerSimpleAction("BuyToRelive_handle", std::bind(&Commander::BuyToRelive_handle, this));
         factory.registerSimpleAction("BuyAmmoRemotely_handle", std::bind(&Commander::BuyAmmoRemotely_handle, this));
+        factory.registerSimpleAction("BuyAmmo_handle", std::bind(&Commander::BuyAmmo_handle, this));
         factory.registerSimpleAction("BuyHp_handle", std::bind(&Commander::BuyHp_handle, this));
+        factory.registerSimpleAction("BuyToRelive_handle", std::bind(&Commander::BuyToRelive_handle, this));
+        factory.registerSimpleAction("Gimbal_handle", std::bind(&Commander::Gimbal_handle, this));
+        factory.registerSimpleAction("GoToEnemyOutpose_handle", std::bind(&Commander::GoToEnemyOutpose_handle, this));
+        factory.registerSimpleAction("GoToStopEngineer_handle", std::bind(&Commander::GoToStopEngineer_handle, this));
+        factory.registerSimpleAction("GoToStopHero_handle", std::bind(&Commander::GoToStopHero_handle, this));
+        factory.registerSimpleAction("Guard", std::bind(&Commander::Guard, this));
+        factory.registerSimpleAction("S2GoToOutpose", std::bind(&Commander::S2GoToOutpose, this));
+        factory.registerSimpleAction("S3Patro", std::bind(&Commander::S3Patro, this));
+        factory.registerSimpleAction("addhp_handle", std::bind(&Commander::addhp_handle, this));
+        factory.registerSimpleAction("attack_handle", std::bind(&Commander::attack_handle, this));
+        factory.registerSimpleAction("defend_handle", std::bind(&Commander::defend_handle, this));
+        factory.registerSimpleAction("outpose_handle", std::bind(&Commander::outpose_handle, this));
+
         auto tree = factory.createTreeFromFile("./src/rm_decision/rm_decision/config/sentry_bt.xml"); //official
         // auto tree = factory.createTreeFromFile("./rm_decision/config/sentry_bt.xml");  //for debug
         BT::Groot2Publisher publisher(tree);
@@ -114,21 +123,7 @@ namespace rm_decision {
             std::cout << "behavetree is working now" << std::endl;
             tree.tickWhileRunning();
             r.sleep();
-            if (dafu) {
-                std::thread([this] {
-                    std::this_thread::sleep_for(std::chrono::minutes(1));
-                    std::cout << "dafu is set to false" << std::endl;
-                    dafu = false;
-                }).detach();
-            }
             if (outpose) {
-                std::thread([this] {
-                    std::this_thread::sleep_for(std::chrono::minutes(1));
-                    std::cout << "outpose is set to false" << std::endl;
-                    outpose = false;
-                }).detach();
-            }
-            if (base) {
                 std::thread([this] {
                     std::this_thread::sleep_for(std::chrono::minutes(1));
                     std::cout << "outpose is set to false" << std::endl;
@@ -304,17 +299,6 @@ namespace rm_decision {
             self_outpost = msg->blue_outpost_hp;
         }
 
-        if (msg->supply_robot_id == 4) {
-            if (msg->supply_projectile_num == 50) {
-                outpose = true;
-            }
-            if (msg->supply_projectile_num == 100) {
-                dafu = true;
-            }
-            if (msg->supply_projectile_num == 200) {
-                base = true;
-            }
-        }
         // RCLCPP_INFO(this->get_logger(), "自身血量: %f, 自身弹量: %f, 自身金币: %f color: %d, gamestary: %d",self_hp,self_ammo,goldcoin,color,gamestart);
     }
 
