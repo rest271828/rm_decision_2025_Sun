@@ -43,7 +43,7 @@ namespace rm_decision {
         loadNavPoints();
         tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
         tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
-        sleep(10);
+        sleep(2);
         //初始化策略 默认是1号策略
         this->declare_parameter<int>("strategy", 1);
         this->get_parameter("strategy", strategy);
@@ -97,7 +97,6 @@ namespace rm_decision {
         factory.registerSimpleCondition("S1", std::bind(&Commander::S1, this));
         factory.registerSimpleCondition("S2", std::bind(&Commander::S2, this));
         factory.registerSimpleCondition("S3", std::bind(&Commander::S3, this));
-        factory.registerSimpleCondition("outpose_ordered", std::bind(&Commander::outpose_ordered, this));
         factory.registerSimpleCondition("wait_for_start", std::bind(&Commander::wait_for_start, this));
 
         factory.registerSimpleAction("BuyAmmoRemotely_handle", std::bind(&Commander::BuyAmmoRemotely_handle, this));
@@ -114,7 +113,6 @@ namespace rm_decision {
         factory.registerSimpleAction("addhp_handle", std::bind(&Commander::addhp_handle, this));
         factory.registerSimpleAction("attack_handle", std::bind(&Commander::attack_handle, this));
         factory.registerSimpleAction("defend_handle", std::bind(&Commander::defend_handle, this));
-        factory.registerSimpleAction("outpose_handle", std::bind(&Commander::outpose_handle, this));
 
         auto tree = factory.createTreeFromFile("./src/rm_decision/rm_decision/config/sentry_bt.xml"); //official
         // auto tree = factory.createTreeFromFile("./rm_decision/config/sentry_bt.xml");  //for debug
@@ -123,13 +121,6 @@ namespace rm_decision {
             std::cout << "behavetree is working now" << std::endl;
             tree.tickWhileRunning();
             r.sleep();
-            if (outpose) {
-                std::thread([this] {
-                    std::this_thread::sleep_for(std::chrono::minutes(1));
-                    std::cout << "outpose is set to false" << std::endl;
-                    outpose = false;
-                }).detach();
-            }
         }
 
     }
@@ -141,7 +132,6 @@ namespace rm_decision {
         while (rclcpp::ok()) {
             getcurrentpose();
             currentState->handle();
-            RCLCPP_INFO(this->get_logger(), "time: %lf", time);
             r.sleep();
         }
     }
@@ -237,9 +227,9 @@ namespace rm_decision {
         RCLCPP_INFO(this->get_logger(), "开始传入导航点");
         geometry_msgs::msg::PoseStamped pose;
         std::vector<double> pose_list;
-        std::vector<std::string> route_list = {"route1", "route2", "route3", "dafu_point",
-                                               "enemy_outpose_point", "enemy_base_point", "self_addhp_point",
-                                               "self_defend_points", "chuji_points",};
+        std::vector<std::string> route_list = {"Guard_points", "self_addhp_point", "self_base_point",
+                                               "S1_Stop_Engineer_point", "S1_Stop_Hero_point", "S1_Outpost_point",
+                                               "S2_Outpose_point", "S3_Patro_points","Guard_points2"};
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator list = list_name.begin();
         this->declare_parameter("home_pose", pose_list);
         //如果战术要求可以读取多条路径
@@ -255,14 +245,15 @@ namespace rm_decision {
             RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*list).size());
             list++;
         }
-        Patrol_points_ = list_name.at(0);
-        random = Patrol_points_.begin();
-        dafu_point_ = list_name.at(3);
-        enemy_outpose_point_ = list_name.at(4);
-        enemy_base_point_ = list_name.at(5);
-        self_addhp_point_ = list_name.at(6);
-        self_defend_points_ = list_name.at(7);
-        chuji_points_ = list_name.at(8);
+        Guard_points = list_name.at(0);
+        self_addhp_point = list_name.at(1);
+        self_base_point = list_name.at(2);
+        S1_Stop_Engineer_point = list_name.at(3);
+        S1_Stop_Hero_point = list_name.at(4);
+        S1_Outpost_point = list_name.at(5);
+        S2_Outpose_point = list_name.at(6);
+        S3_Patro_points = list_name.at(7);
+        Guard_points2 = list_name.at(8);
     }
 
     // 加载敌军hp
@@ -331,8 +322,8 @@ namespace rm_decision {
         if (commander->checkgoal) {
             commander->nav_to_pose(*commander->random);
             commander->random++;
-            if (commander->random == commander->Patrol_points_.end()) {
-                commander->random = commander->Patrol_points_.begin();
+            if (commander->random == commander->Patro_points.end()) {
+                commander->random = commander->Patro_points.begin();
             }
             commander->checkgoal = false;
         }
@@ -373,31 +364,6 @@ namespace rm_decision {
             commander->checkgoal = false;
         }
     }
-
-
-
-
-
-
-
-
-
-    //timer
-    // double Commander::timer(){
-    // if(packet.game_progress == 0x24         && !first_start){
-    //    first_start = true;
-    //    startTime = std::chrono::steady_clock::now();
-    // }
-    // if(first_start){
-    //    std::chrono::steady_clock::time_point currentTime = std::chrono::steady_clock::now();
-    //    std::chrono::duration<double> dur = currentTime - startTime;
-    //    double dur_sec = dur.count();
-    //    return dur_sec;
-    // }
-    // else{
-    //    return 400;
-    // }
-    // }
 
 
     //联盟赛获取自身坐标

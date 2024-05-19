@@ -1,18 +1,25 @@
 /rm_decision_node:
   ros__parameters:
     home_pose: [ 0.0, 0.0, 0.0 ]
+
     strategy: 2
-    route1: [ -0.5, 1.6, 0.0,
+
+    Guard_points: [ -0.5, 1.6, 0.0,
               -0.5, 2.4, 0.0,
               -1.0, 2.4, 0.0 ]
-    route2: [ -2.4, 1.0, 0.0,
-              -1.7, 1.0, 0.0 ]
-    route3: [ -2.475, 1.65, 0.0,
-              -2.475, 2.65, 0.0 ]
-    dafu_point: [ 0.0, 0.0, 0.0 ]
-    enemy_outpose_point: [ 0.0 , 0.0, 0.0 ]
-    enemy_base_point: [ 0.0 , 0.0, 0.0 ]
-    self_addhp_point: [ 0.0 , 0.0, 0.0 ]
-    self_defend_points: [ 0.0 , 0.0, 0.0 ]
-    chuji_points: [ 0.0 , 0.0, 0.0 ]
+    self_addhp_point: [ 0.0, 0.0, 0.0 ]
+    self_base_point: [ 0.0, 0.0, 0.0 ]
 
+    S1_Stop_Engineer_point: [ 0.0, 0.0, 0.0 ]
+    S1_Stop_Hero_point: [ 0.0, 0.0, 0.0 ]
+    S1_Outpost_point: [ 0.0, 0.0, 0.0 ]
+
+    S2_Outpose_point: [ 0.0, 0.0, 0.0 ]
+
+    S3_Patro_points: [ 0.0, 0.0, 0.0,
+                          1.0, 2.0, 0.0]
+
+    #will be used if shangpo is not available
+    Guard_points2: [0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0]
