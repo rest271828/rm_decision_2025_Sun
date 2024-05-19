@@ -19,6 +19,8 @@
 #include <fstream>
 #include <cmath>
 #include <bitset>
+#include <chrono>
+
 
 #include "rm_decision/commander.hpp"
 
@@ -118,8 +120,8 @@ namespace rm_decision {
         // auto tree = factory.createTreeFromFile("./rm_decision/config/sentry_bt.xml");  //for debug
         BT::Groot2Publisher publisher(tree);
         while (rclcpp::ok()) {
-            std::cout << "behavetree is working now" << std::endl;
             tree.tickWhileRunning();
+            canshangpo();
             r.sleep();
         }
 
@@ -314,6 +316,33 @@ namespace rm_decision {
     double Commander::distence(const geometry_msgs::msg::PoseStamped a) {
         double dis = sqrt(pow(a.pose.position.x, 2) + pow(a.pose.position.y, 2));
         return dis;
+    }
+
+    void Commander::canshangpo(){
+        int x_min;
+        int x_max;
+        int y_min;
+        int y_max;
+
+        this->get_parameter("x_min", x_min);
+        this->get_parameter("x_max", x_max);
+        this->get_parameter("y_min", y_min);
+        this->get_parameter("y_max", y_max);
+        getcurrentpose();
+        if(currentpose.pose.position.x <= x_max && currentpose.pose.position.x >= x_min){
+            if(currentpose.pose.position.y <= y_max && currentpose.pose.position.y >= y_min){
+                if (!shangpofail && !shanpotimer) {
+                    start_time = std::chrono::steady_clock::now();
+                    shanpotimer = true;
+                    }
+
+                auto now = std::chrono::steady_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 30) {
+                    shangpofail = true;
+                    shanpotimer = false;
+                    }
+            }
+        }
     }
 
 

@@ -1,8 +1,15 @@
+# you may need to reset the nav points depend on your color
 /rm_decision_node:
   ros__parameters:
     home_pose: [ 0.0, 0.0, 0.0 ]
 
     strategy: 2
+
+    #the area of po
+    x_min: 0.0
+    x_max: 1.0
+    y_min: 0.0
+    y_max: 1.0
 
     Guard_points: [ -0.5, 1.6, 0.0,
               -0.5, 2.4, 0.0,

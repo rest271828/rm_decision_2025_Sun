@@ -177,6 +177,8 @@ namespace rm_decision {
 
         void getcurrentpose();
 
+        void canshangpo();
+
         std::vector<geometry_msgs::msg::PoseStamped> generateRandomPoints(int num_points, double radius);
 
         geometry_msgs::msg::PoseStamped currentpose;
@@ -265,6 +267,14 @@ namespace rm_decision {
         bool hpBought = false;
         bool stop_engineer_goal_reached = false;
         bool stop_engineer_finished = false; //will not stop in s1 if set to true
+        bool shangpofail = false;
+        bool shanpotimer = false;
+        bool addhpfail = false;
+        bool addhptimer = false;
+        std::chrono::steady_clock::time_point start_time;
+        std::chrono::steady_clock::time_point start_time2;
+
+
     private:
 
         rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
@@ -373,6 +383,17 @@ namespace rm_decision {
             goal.pose.orientation.z = 0.0;
             goal.pose.orientation.w = 1.0;
             setState(std::make_shared<GoAndStayState>(this));
+            
+            if (!addhptimer) {
+                    start_time2 = std::chrono::steady_clock::now();
+                    addhptimer = true;
+                }
+
+            auto now = std::chrono::steady_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time2).count() >= 20) {
+                    addhpfail = true;
+                    addhptimer = false;
+                }
         }
 
         void mydefend_handle() {
@@ -398,8 +419,15 @@ namespace rm_decision {
         }
 
         void myguard_handle() {
-            Patro_points = Guard_points;
-            random = Guard_points.begin();
+            if(!shangpofail){
+                Patro_points = Guard_points;
+                random = Guard_points.begin();
+            }
+            else if(shangpofail){
+                Patro_points = Guard_points2;
+                random = Guard_points2.begin();
+            }
+
             setState(std::make_shared<PatrolState>(this));
         }
 
@@ -471,10 +499,15 @@ namespace rm_decision {
             if (self_hp == 400) {
                 addhp_ordered = false;
             }
-
-            if (addhp_ordered && self_ammo < 50) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
+            if(!addhpfail){
+                if (addhp_ordered && self_ammo < 50) {
+                    return BT::NodeStatus::SUCCESS;
+                }
+                else {
+                    return BT::NodeStatus::FAILURE;
+                }
+            }
+            else{
                 return BT::NodeStatus::FAILURE;
             }
         }
@@ -496,6 +529,9 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfGuard() {
+            if(nav_state == 1){
+                addhpfail = false;
+            }
             return BT::NodeStatus::SUCCESS;
         }
 
@@ -592,12 +628,10 @@ namespace rm_decision {
 
         BT::NodeStatus addhp_handle() {
             myaddhp_handle();
-            if (nav_state == 1) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
-            }
+            return BT::NodeStatus::SUCCESS;
         }
+            
+
 
         BT::NodeStatus defend_handle() {
             mydefend_handle();
