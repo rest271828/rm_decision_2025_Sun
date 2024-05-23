@@ -3,7 +3,7 @@
   ros__parameters:
     home_pose: [ 0.0, 0.0, 0.0 ]
 
-    strategy: 2
+    strategy: 1
 
     #the area of po
     x_min: 0.0
@@ -11,22 +11,36 @@
     y_min: 0.0
     y_max: 1.0
 
-    Guard_points: [ -0.5, 1.6, 0.0,
-              -0.5, 2.4, 0.0,
-              -1.0, 2.4, 0.0 ]
+    Guard_points: [ 0.56, -2.88, 0.0,
+              1.77, -3.03, 0.0,
+              1.87, -4.05, 0.0,
+              0.0, -3.52, 0.0]
     self_addhp_point: [ 0.0, 0.0, 0.0 ]
-    self_base_point: [ 0.0, 0.0, 0.0 ]
+    self_base_point: [ 1.0, 0.0, 0.0 ]
 
-    S1_Stop_Engineer_point: [ 0.0, 0.0, 0.0 ]
-    S1_Stop_Hero_point: [ 0.0, 0.0, 0.0 ]
-    S1_Outpost_point: [ 0.0, 0.0, 0.0 ]
+    S1_Stop_Engineer_point: [ 5.64, -0.75, 0.0 ]
+    S1_Stop_Hero_point: [ 8.74, -3.24, 0.0 ]
+    S1_Outpost_point: [ 8.18, -2.13, 0.0 ]
 
-    S2_Outpose_point: [ 0.0, 0.0, 0.0 ]
+    S2_Outpose_point: [ 8.18, -2.13, 0.0 ]
 
-    S3_Patro_points: [ 0.0, 0.0, 0.0,
-                          1.0, 2.0, 0.0]
+    S3_Patro_points: [ 9.12, -2.11, 0.0,
+                      7.61, -2.89, 0.0]
 
     #will be used if shangpo is not available
-    Guard_points2: [0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0]
+    Guard_points2: [ 0.56, -2.88, 0.0,
+              1.77, -3.03, 0.0,
+              1.87, -4.05, 0.0,
+              0.0, -3.52, 0.0]
+    po_area1: [-2.0, 1.0, 0.0,
+              -2.0, 2.0, 0.0,
+              -3.0, 2.0, 0.0,
+              -3.0, 1.0, 0.0]
+    po_area2: [0.0, -1.0, 0.0,
+               1.0, -1.0, 0.0,
+               1.0, 1.0, 0.0,
+               0.0, 1.0, 0.0]
+    po_area3: [200.0, 100.0, 0.0,
+              200.0, 200.0, 0.0,
+              300.0, 200.0, 0.0,
+              300.0, 100.0, 0.0]

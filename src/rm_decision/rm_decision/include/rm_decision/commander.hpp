@@ -179,6 +179,10 @@ namespace rm_decision {
 
         void canshangpo();
 
+        bool isinpo(std::vector<geometry_msgs::msg::PoseStamped> area, geometry_msgs::msg::PoseStamped goal);
+
+        float getyawdiff(geometry_msgs::msg::PoseStamped a, geometry_msgs::msg::PoseStamped b);
+
         std::vector<geometry_msgs::msg::PoseStamped> generateRandomPoints(int num_points, double radius);
 
         geometry_msgs::msg::PoseStamped currentpose;
@@ -198,6 +202,10 @@ namespace rm_decision {
 
 
         std::vector<geometry_msgs::msg::PoseStamped> move_points_;
+        std::vector<geometry_msgs::msg::PoseStamped> po_area1;
+        std::vector<geometry_msgs::msg::PoseStamped> po_area2;
+        std::vector<geometry_msgs::msg::PoseStamped> po_area3;
+        std::vector<std::vector<geometry_msgs::msg::PoseStamped>> po_name = {po_area1, po_area2, po_area3};
 
 
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>> list_name = {Guard_points, self_addhp_point,
@@ -207,14 +215,21 @@ namespace rm_decision {
                                                                                Guard_points2
                                                                                };
         std::vector<geometry_msgs::msg::PoseStamped>::iterator random;
+        std::vector<geometry_msgs::msg::PoseStamped>::iterator attack;
+
         std::vector<geometry_msgs::msg::PoseStamped>::iterator move;
         geometry_msgs::msg::PoseStamped goal;
         geometry_msgs::msg::PoseStamped home;
         std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future;
-
+        float diffyaw = 0.0 ;
+        bool shangpo = false;
+        bool checkpo_shangpoing = false;
         bool checkgoal = true;
         bool first_start = false;
         bool control = false;
+        std::chrono::steady_clock::time_point startTime;
+
+
 
         // 机器人血量
         Robot self_1 = Robot(1, geometry_msgs::msg::PoseStamped(), 150);
@@ -252,7 +267,7 @@ namespace rm_decision {
         float self_hp = 400;
         float self_ammo = 400;
         float self_base = 400;
-        float self_outpost = 400;
+        float self_outpost = 1500;
         int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
         float goldcoin;
         bool defend_order_goal_reached = false;
@@ -267,10 +282,15 @@ namespace rm_decision {
         bool hpBought = false;
         bool stop_engineer_goal_reached = false;
         bool stop_engineer_finished = false; //will not stop in s1 if set to true
-        bool shangpofail = false;
+        bool shangpofail = true;
         bool shanpotimer = false;
         bool addhpfail = false;
         bool addhptimer = false;
+        //for test
+        bool testtimer = false;
+        std::chrono::steady_clock::time_point testTime;
+
+
         std::chrono::steady_clock::time_point start_time;
         std::chrono::steady_clock::time_point start_time2;
 
@@ -286,6 +306,7 @@ namespace rm_decision {
         void setState(std::shared_ptr<State> state);
 
         void loadNavPoints();
+        void checkpo();
 
         void aim_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
 
@@ -493,7 +514,7 @@ namespace rm_decision {
 
 
         BT::NodeStatus IfAddHp() {
-            if (self_hp <= 150) {
+            if (self_hp <= 390) {
                 addhp_ordered = true;
             }
             if (self_hp == 400) {
@@ -513,11 +534,13 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfDefend() {
-            if (self_base <= 150) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::FAILURE;
-            }
+            // if (self_base <= 150) {
+            //     return BT::NodeStatus::SUCCESS;
+            // } else {
+            //     return BT::NodeStatus::FAILURE;
+            // }
+            return BT::NodeStatus::FAILURE;
+
         }
 
         BT::NodeStatus IfAttack() {
@@ -578,7 +601,7 @@ namespace rm_decision {
 
 
         BT::NodeStatus IfGoToEnemyOutpose() {
-            if(enemy_outpost_hp > 0){
+            if(self_outpost > 1490){
                 return BT::NodeStatus::SUCCESS;
             }
             else return BT::NodeStatus::FAILURE;
@@ -595,7 +618,7 @@ namespace rm_decision {
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus IfOutposeAlive() {
-            if(self_outpost!=0){
+            if(self_outpost >= 1480){
                 return BT::NodeStatus::SUCCESS;
             }
             else return BT::NodeStatus::FAILURE;  
@@ -637,19 +660,15 @@ namespace rm_decision {
             mydefend_handle();
             if (nav_state == 1) {
                 defend_order_goal_reached = false;
+            }                 
                 return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
-            }
         }
 
         BT::NodeStatus attack_handle() {
             myattack_handle();
-            if (nav_state == 1) {
-                return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
-            }
+
+            return BT::NodeStatus::SUCCESS;
+ 
         }
 
         BT::NodeStatus Guard() {
@@ -684,13 +703,13 @@ namespace rm_decision {
             myGoToStopEngineer_handle();
             if (nav_state == 1) {
                 stop_engineer_goal_reached = true;
-                std::this_thread::sleep_for(std::chrono::seconds(15));
+                std::this_thread::sleep_for(std::chrono::seconds(5));
                 stop_engineer_finished = true;
+            }                 
                 return BT::NodeStatus::SUCCESS;
-            } else {
-                return BT::NodeStatus::RUNNING;
+
             }
-        }
+        
         BT::NodeStatus GoToStopHero_handle() {
             myGoToStopHero_handle();
             return BT::NodeStatus::SUCCESS;

@@ -121,11 +121,31 @@ namespace rm_decision {
         BT::Groot2Publisher publisher(tree);
         while (rclcpp::ok()) {
             tree.tickWhileRunning();
-            canshangpo();
+            //RCLCPP_INFO(this->get_logger(), "自身血量: %f, 自身弹量: %f, 自身金币: %f color: %d, gamestary: %d, enemy_outpose: %d, self_outpose:%f",self_hp,self_ammo,goldcoin,color,gamestart,enemy_outpost_hp,self_outpost);
+            //canshangpo();
+
+            // if (!testtimer) {
+            // testTime = std::chrono::steady_clock::now();
+            // testtimer = true;
+            // }
+
+            // auto now = std::chrono::steady_clock::now();
+            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 5) {
+            //         gamestart = 1;
+            //  }
+        
+            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 25) {
+            //         self_outpost = 1200;
+            //  }
+            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 35) {
+            //         self_base = 100;
+            //  }
+        
             r.sleep();
         }
 
     }
+    
 
 
     // 执行器线程
@@ -134,6 +154,7 @@ namespace rm_decision {
         while (rclcpp::ok()) {
             getcurrentpose();
             currentState->handle();
+            //checkpo();
             r.sleep();
         }
     }
@@ -141,9 +162,9 @@ namespace rm_decision {
 
     // 改变状态
     void Commander::setState(std::shared_ptr<State> state) {
-        if (currentState != state) {
-            move_points_.clear();
-        }
+        // if (currentState != state) {
+        //     move_points_.clear();
+        // }
         currentState = state;
     }
 
@@ -232,7 +253,11 @@ namespace rm_decision {
         std::vector<std::string> route_list = {"Guard_points", "self_addhp_point", "self_base_point",
                                                "S1_Stop_Engineer_point", "S1_Stop_Hero_point", "S1_Outpost_point",
                                                "S2_Outpose_point", "S3_Patro_points","Guard_points2"};
+        
+        std::vector<std::string> area_list = {"po_area1", "po_area2", "po_area3"};
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator list = list_name.begin();
+        std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area = po_name.begin();
+
         this->declare_parameter("home_pose", pose_list);
         //如果战术要求可以读取多条路径
         home.header.frame_id = "map";
@@ -247,6 +272,14 @@ namespace rm_decision {
             RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*list).size());
             list++;
         }
+        for (auto it = area_list.begin(); it != area_list.end(); it++)
+      {
+         this->declare_parameter(*it, pose_list);
+         auto pose_param = this->get_parameter(*it).as_double_array();
+         processPoses(pose_param, *area);
+         RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*area).size());
+         area ++;
+      }
         Guard_points = list_name.at(0);
         self_addhp_point = list_name.at(1);
         self_base_point = list_name.at(2);
@@ -257,6 +290,24 @@ namespace rm_decision {
         S3_Patro_points = list_name.at(7);
         Guard_points2 = list_name.at(8);
     }
+    void Commander::checkpo(){
+      std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area;
+      uint i = 0;
+      for ( i = 0; i != po_name.size(); i ++){
+         if(isinpo(po_name[i],currentpose)){
+            checkpo_shangpoing = true;
+            diffyaw = getyawdiff(po_name[i][0],po_name[i][1]);
+            // RCLCPP_INFO(this->get_logger(), "在坡 diffyaw=%f", diffyaw);
+            break;
+         }
+      }
+         if(i == po_name.size()){
+            checkpo_shangpoing = false;
+            diffyaw = 0;
+            // RCLCPP_INFO(this->get_logger(), "no po");
+         }
+
+      }
 
     // 加载敌军hp
     uint Commander::enemyhp() {
@@ -286,13 +337,13 @@ namespace rm_decision {
             self_hp = msg->red_7;
             self_base = msg->red_base_hp;
             self_outpost = msg->red_outpost_hp;
+            enemy_outpost_hp = msg->blue_outpost_hp;
         } else {
             self_hp = msg->blue_7;
             self_base = msg->blue_base_hp;
             self_outpost = msg->blue_outpost_hp;
+            enemy_outpost_hp = msg->red_outpost_hp;
         }
-
-        // RCLCPP_INFO(this->get_logger(), "自身血量: %f, 自身弹量: %f, 自身金币: %f color: %d, gamestary: %d",self_hp,self_ammo,goldcoin,color,gamestart);
     }
 
     void Commander::aim_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg) {
@@ -338,11 +389,35 @@ namespace rm_decision {
 
                 auto now = std::chrono::steady_clock::now();
                 if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 30) {
-                    shangpofail = true;
+                    if(checkpo_shangpoing){
+                        shangpofail = true;
+                        shangpo = false;
+                    }
                     shanpotimer = false;
                     }
             }
         }
+    }
+
+    bool Commander::isinpo(std::vector<geometry_msgs::msg::PoseStamped> area, geometry_msgs::msg::PoseStamped goal){
+         uint i, j;
+         bool c = false;
+         for (i = 0, j = area.size() - 1; i < area.size(); j = i++)
+         {
+            if (((area[i].pose.position.y > goal.pose.position.y) != (area[j].pose.position.y > goal.pose.position.y)) &&
+               (goal.pose.position.x < (area[j].pose.position.x - area[i].pose.position.x) * (goal.pose.position.y - area[i].pose.position.y) / (area[j].pose.position.y - area[i].pose.position.y) + area[i].pose.position.x))
+               c = !c;
+         }
+         return c;
+    }
+
+    float Commander::getyawdiff(geometry_msgs::msg::PoseStamped a, geometry_msgs::msg::PoseStamped b){
+       float diffyaw, goalyaw;
+       goalyaw = atan((b.pose.position.y - a.pose.position.y)/(b.pose.position.x - a.pose.position.x));
+    //    RCLCPP_INFO(this->get_logger(), "goal%f cur %f", goalyaw,currentpose.pose.orientation.z);
+       diffyaw = (goalyaw - asin(currentpose.pose.orientation.z)*2)*(180.0/M_PI);
+       diffyaw = fmod(diffyaw + 180, 360) - 180;
+       return diffyaw;
     }
 
 
@@ -403,9 +478,9 @@ namespace rm_decision {
                     "map", "livox_frame",
                     tf2::TimePointZero);
         } catch (const tf2::TransformException &ex) {
-            RCLCPP_INFO(
-                    this->get_logger(), "Could not transform : %s",
-                    ex.what());
+            // RCLCPP_INFO(
+            //         this->get_logger(), "Could not transform : %s",
+            //         ex.what());
             return;
         }
         currentpose.header.stamp = this->now();
