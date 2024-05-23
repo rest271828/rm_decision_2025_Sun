@@ -92,10 +92,7 @@ namespace rm_decision {
         this->get_parameter("shangpo_timeout", shangpo_timeout);
         this->declare_parameter<int>("if_open_movestats", 2);
         this->get_parameter("if_open_movestats", if_open_movestats);
-        this->declare_parameter<int>("generateRandomPoints_num", 10);
-        this->get_parameter("generateRandomPoints_num", generateRandomPoints_num);
-        this->declare_parameter<float>("generateRandomPoints_r", 1.5);
-        this->get_parameter("generateRandomPoints_r", generateRandomPoints_r);
+       
 
         if(sentry_want_shangpo ==2){
             shangpofail = true;
@@ -478,7 +475,7 @@ namespace rm_decision {
     //振荡模式
     void MoveState::handle() {
         if (commander->move_points_.empty()) {
-            commander->move_points_ = commander->generateRandomPoints(generateRandomPoints_num, generateRandomPoints_r);
+            commander->move_points_ = commander->generateRandomPoints(10, 1.5);
             commander->move = commander->move_points_.begin();
         }
 

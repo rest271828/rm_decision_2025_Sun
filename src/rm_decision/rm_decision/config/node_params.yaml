@@ -79,5 +79,4 @@
     addhp_timeout: 20 #加血最大用时
     shangpo_timeout: 20 #上坡最大用时
     if_open_movestats: 2 #是否开启移动状态 1:开启 2:关闭
-    generateRandomPoints_num: 10 #MoveState生成随机点个数
-    generateRandomPoints_r: 1.5 #MoveState生成随机点半径,单位为米
+

@@ -300,6 +300,7 @@ namespace rm_decision {
         int if_open_movestats = 2;
         int generateRandomPoints_num = 10;
         float generateRandomPoints_r = 1.5;
+
     private:
 
         rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
