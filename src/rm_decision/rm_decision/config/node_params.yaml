@@ -69,10 +69,15 @@
     buy_hp_remotely_goldcoin_threshold: 300
 
     #回基地补弹条件 没弹有点钱
-    buy_ammo_local_threshold: 50
+    buy_ammo_local_ammo_threshold: 50
     buy_ammo_local_goldcoin_threshold: 200
 
     self_outpose_threshold: 500 #当己方前哨站血量少于此值，会从出击策略转为防御策略
     buy_ammo_num_at_a_time: 100 #哨兵每一次请求买弹的买弹量
 
     time_to_stop_enginner: 5 #S1决策中，哨兵停留在工程点的时间
+    addhp_timeout: 20 #加血最大用时
+    shangpo_timeout: 20 #上坡最大用时
+    if_open_movestats: 2 #是否开启移动状态 1:开启 2:关闭
+    generateRandomPoints_num: 10 #MoveState生成随机点个数
+    generateRandomPoints_r: 1.5 #MoveState生成随机点半径,单位为米

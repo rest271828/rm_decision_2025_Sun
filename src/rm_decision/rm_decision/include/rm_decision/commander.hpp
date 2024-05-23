@@ -288,13 +288,18 @@ namespace rm_decision {
         int buy_hp_remotely_goldcoin_threshold = 300;
 
         //回基地补弹条件 没弹有点钱
-        int buy_ammo_local_threshold = 50;
+        int buy_ammo_local_ammo_threshold = 50;
         int buy_ammo_local_goldcoin_threshold = 200;
 
         int self_outpose_threshold = 500; //当己方前哨站血量少于此值，会从出击策略转为防御策略
         int buy_ammo_num_at_a_time = 100; //哨兵每一次买弹量
 
         int time_to_stop_enginner = 5; //S1决策中，哨兵停留在工程点的时间
+        int addhp_timeout = 20;
+        int shangpo_timeout = 20;
+        int if_open_movestats = 2;
+        int generateRandomPoints_num = 10;
+        float generateRandomPoints_r = 1.5;
     private:
 
         rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
@@ -406,7 +411,7 @@ namespace rm_decision {
                 }
 
             auto now = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time2).count() >= 20) {
+                if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time2).count() >= addhp_timeout) {
                     addhpfail = true;
                     addhptimer = false;
                 }
@@ -425,8 +430,9 @@ namespace rm_decision {
                 goal.pose.orientation.z = 0.0;
                 goal.pose.orientation.w = 1.0;
                 setState(std::make_shared<GoAndStayState>(this));
-            } else
+            } else if(if_open_movestats==1){
                 setState(std::make_shared<MoveState>(this));
+            }
         }
 
         void myattack_handle() {
@@ -588,7 +594,7 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfBuyAmmo() {
-            if(self_ammo < buy_ammo_local_threshold && goldcoin > buy_ammo_local_goldcoin_threshold){
+            if(self_ammo < buy_ammo_local_ammo_threshold && goldcoin > buy_ammo_local_goldcoin_threshold){
                 return BT::NodeStatus::SUCCESS;
             }
             else {

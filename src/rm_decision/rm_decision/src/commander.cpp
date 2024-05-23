@@ -74,8 +74,8 @@ namespace rm_decision {
         this->get_parameter("buy_hp_remotely_hp_threshold", buy_hp_remotely_hp_threshold);
         this->declare_parameter<int>("buy_hp_remotely_goldcoin_threshold", 300);
         this->get_parameter("buy_hp_remotely_goldcoin_threshold", buy_hp_remotely_goldcoin_threshold);
-        this->declare_parameter<int>("buy_ammo_local_threshold", 50);
-        this->get_parameter("buy_ammo_local_threshold", buy_ammo_local_threshold);
+        this->declare_parameter<int>("buy_ammo_local_ammo_threshold", 50);
+        this->get_parameter("buy_ammo_local_ammo_threshold", buy_ammo_local_ammo_threshold);
         this->declare_parameter<int>("buy_ammo_local_goldcoin_threshold", 200);
         this->get_parameter("buy_ammo_local_goldcoin_threshold", buy_ammo_local_goldcoin_threshold);
         this->declare_parameter<int>("self_outpose_threshold", 500);
@@ -86,6 +86,16 @@ namespace rm_decision {
         this->get_parameter("not_buy_but_relive", not_buy_but_relive);
         this->declare_parameter<int>("time_to_stop_enginner", 5);
         this->get_parameter("time_to_stop_enginner", time_to_stop_enginner);
+        this->declare_parameter<int>("addhp_timeout", 20);
+        this->get_parameter("addhp_timeout", addhp_timeout);
+        this->declare_parameter<int>("shangpo_timeout", 20);
+        this->get_parameter("shangpo_timeout", shangpo_timeout);
+        this->declare_parameter<int>("if_open_movestats", 2);
+        this->get_parameter("if_open_movestats", if_open_movestats);
+        this->declare_parameter<int>("generateRandomPoints_num", 10);
+        this->get_parameter("generateRandomPoints_num", generateRandomPoints_num);
+        this->declare_parameter<float>("generateRandomPoints_r", 1.5);
+        this->get_parameter("generateRandomPoints_r", generateRandomPoints_r);
 
         if(sentry_want_shangpo ==2){
             shangpofail = true;
@@ -191,9 +201,9 @@ namespace rm_decision {
 
     // 改变状态
     void Commander::setState(std::shared_ptr<State> state) {
-        // if (currentState != state) {
-        //     move_points_.clear();
-        // }
+        if (currentState != state && if_open_movestats==1) {
+            move_points_.clear();
+        }
         currentState = state;
     }
 
@@ -404,7 +414,7 @@ namespace rm_decision {
             shanpotimer = true;
             }
         auto now = std::chrono::steady_clock::now();
-        if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 30) {
+        if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= shangpo_timeout) {
             if(checkpo_shangpoing){
                 shangpofail = true;
             }
@@ -468,7 +478,7 @@ namespace rm_decision {
     //振荡模式
     void MoveState::handle() {
         if (commander->move_points_.empty()) {
-            commander->move_points_ = commander->generateRandomPoints(10, 0.6);
+            commander->move_points_ = commander->generateRandomPoints(generateRandomPoints_num, generateRandomPoints_r);
             commander->move = commander->move_points_.begin();
         }
 
