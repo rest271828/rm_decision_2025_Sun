@@ -50,6 +50,46 @@ namespace rm_decision {
         this->declare_parameter<int>("strategy", 1);
         this->get_parameter("strategy", strategy);
 
+        this->declare_parameter<int>("sentry_want_shangpo", 2);
+        this->get_parameter("sentry_want_shangpo", sentry_want_shangpo);
+        this->declare_parameter<int>("addhp_threshold", 100);
+        this->get_parameter("addhp_threshold", addhp_threshold);
+        this->declare_parameter<int>("addhp_full_threshold", 400);
+        this->get_parameter("addhp_full_threshold", addhp_full_threshold);
+        this->declare_parameter<int>("defend_threshold", 3000);
+        this->get_parameter("defend_threshold", defend_threshold);
+        this->declare_parameter<int>("buy_to_relive_goldcoin_threshold", 400);
+        this->get_parameter("buy_to_relive_goldcoin_threshold", buy_to_relive_goldcoin_threshold);
+        this->declare_parameter<int>("buy_ammo_remotely_ammo_threshold_when_wudi", 50);
+        this->get_parameter("buy_ammo_remotely_ammo_threshold_when_wudi", buy_ammo_remotely_ammo_threshold_when_wudi);
+        this->declare_parameter<int>("buy_ammo_remotely_ammo_threshold_when_youdi", 50);
+        this->get_parameter("buy_ammo_remotely_ammo_threshold_when_youdi", buy_ammo_remotely_ammo_threshold_when_youdi);
+        this->declare_parameter<int>("buy_ammo_remotely_hp_threshold_when_youdi", 50);
+        this->get_parameter("buy_ammo_remotely_hp_threshold_when_youdi", buy_ammo_remotely_hp_threshold_when_youdi);
+        this->declare_parameter<int>("buy_ammo_remotely_goldcoin_threshold_when_wudi", 400);
+        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_wudi", buy_ammo_remotely_goldcoin_threshold_when_wudi);
+        this->declare_parameter<int>("buy_ammo_remotely_goldcoin_threshold_when_youdi", 400);
+        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_youdi", buy_ammo_remotely_goldcoin_threshold_when_youdi);
+        this->declare_parameter<int>("buy_hp_remotely_hp_threshold", 200);
+        this->get_parameter("buy_hp_remotely_hp_threshold", buy_hp_remotely_hp_threshold);
+        this->declare_parameter<int>("buy_hp_remotely_goldcoin_threshold", 300);
+        this->get_parameter("buy_hp_remotely_goldcoin_threshold", buy_hp_remotely_goldcoin_threshold);
+        this->declare_parameter<int>("buy_ammo_local_threshold", 50);
+        this->get_parameter("buy_ammo_local_threshold", buy_ammo_local_threshold);
+        this->declare_parameter<int>("buy_ammo_local_goldcoin_threshold", 200);
+        this->get_parameter("buy_ammo_local_goldcoin_threshold", buy_ammo_local_goldcoin_threshold);
+        this->declare_parameter<int>("self_outpose_threshold", 500);
+        this->get_parameter("self_outpose_threshold", self_outpose_threshold);
+        this->declare_parameter<int>("buy_ammo_num_at_a_time", 100);
+        this->get_parameter("buy_ammo_num_at_a_time", buy_ammo_num_at_a_time);
+        this->declare_parameter<int>("not_buy_but_relive", 1);
+        this->get_parameter("not_buy_but_relive", not_buy_but_relive);
+        this->declare_parameter<int>("time_to_stop_enginner", 5);
+        this->get_parameter("time_to_stop_enginner", time_to_stop_enginner);
+
+        if(sentry_want_shangpo ==2){
+            shangpofail = true;
+        }
         RCLCPP_INFO(this->get_logger(), "开始");
         currentState = std::make_shared<WaitState>(this);
 
@@ -61,6 +101,7 @@ namespace rm_decision {
         enemypose_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
                 "/tracker/enemypose", 10, std::bind(&Commander::enemypose_callback, this, std::placeholders::_1));
         sentry_cmd_pub_ = this->create_publisher<rm_decision_interfaces::msg::ToSerial>("sentry/cmd", 10);
+        sentry_status_pub_ = this->create_publisher<rm_decision_interfaces::msg::ToAutoAim>("sentry/status", 10);
 
         // 创建线程（处理信息和发布命令）
         commander_thread_ = std::thread(&Commander::decision, this);
@@ -122,25 +163,10 @@ namespace rm_decision {
         while (rclcpp::ok()) {
             tree.tickWhileRunning();
             //RCLCPP_INFO(this->get_logger(), "自身血量: %f, 自身弹量: %f, 自身金币: %f color: %d, gamestary: %d, enemy_outpose: %d, self_outpose:%f",self_hp,self_ammo,goldcoin,color,gamestart,enemy_outpost_hp,self_outpost);
-            //canshangpo();
 
-            // if (!testtimer) {
-            // testTime = std::chrono::steady_clock::now();
-            // testtimer = true;
-            // }
-
-            // auto now = std::chrono::steady_clock::now();
-            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 5) {
-            //         gamestart = 1;
-            //  }
-        
-            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 25) {
-            //         self_outpost = 1200;
-            //  }
-            // if (std::chrono::duration_cast<std::chrono::seconds>(now - testTime).count() >= 35) {
-            //         self_base = 100;
-            //  }
-        
+            rm_decision_interfaces::msg::ToAutoAim msg;
+            msg.status = sentry_status;
+            sentry_status_pub_->publish(msg);
             r.sleep();
         }
 
@@ -154,7 +180,10 @@ namespace rm_decision {
         while (rclcpp::ok()) {
             getcurrentpose();
             currentState->handle();
-            //checkpo();
+            if(sentry_want_shangpo == 1){
+                checkpo();
+                canshangpo();
+            }
             r.sleep();
         }
     }
@@ -251,7 +280,7 @@ namespace rm_decision {
         geometry_msgs::msg::PoseStamped pose;
         std::vector<double> pose_list;
         std::vector<std::string> route_list = {"Guard_points", "self_addhp_point", "self_base_point",
-                                               "S1_Stop_Engineer_point", "S1_Stop_Hero_point", "S1_Outpost_point",
+                                               "S1_Stop_Engineer_point", "S1_Stop_Hero_points", "S1_Outpost_point",
                                                "S2_Outpose_point", "S3_Patro_points","Guard_points2"};
         
         std::vector<std::string> area_list = {"po_area1", "po_area2", "po_area3"};
@@ -284,7 +313,7 @@ namespace rm_decision {
         self_addhp_point = list_name.at(1);
         self_base_point = list_name.at(2);
         S1_Stop_Engineer_point = list_name.at(3);
-        S1_Stop_Hero_point = list_name.at(4);
+        S1_Stop_Hero_points = list_name.at(4);
         S1_Outpost_point = list_name.at(5);
         S2_Outpose_point = list_name.at(6);
         S3_Patro_points = list_name.at(7);
@@ -370,33 +399,17 @@ namespace rm_decision {
     }
 
     void Commander::canshangpo(){
-        int x_min;
-        int x_max;
-        int y_min;
-        int y_max;
-
-        this->get_parameter("x_min", x_min);
-        this->get_parameter("x_max", x_max);
-        this->get_parameter("y_min", y_min);
-        this->get_parameter("y_max", y_max);
-        getcurrentpose();
-        if(currentpose.pose.position.x <= x_max && currentpose.pose.position.x >= x_min){
-            if(currentpose.pose.position.y <= y_max && currentpose.pose.position.y >= y_min){
-                if (!shangpofail && !shanpotimer) {
-                    start_time = std::chrono::steady_clock::now();
-                    shanpotimer = true;
-                    }
-
-                auto now = std::chrono::steady_clock::now();
-                if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 30) {
-                    if(checkpo_shangpoing){
-                        shangpofail = true;
-                        shangpo = false;
-                    }
-                    shanpotimer = false;
-                    }
+        if (!shangpofail && !shanpotimer) {
+            start_time = std::chrono::steady_clock::now();
+            shanpotimer = true;
             }
-        }
+        auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= 30) {
+            if(checkpo_shangpoing){
+                shangpofail = true;
+            }
+            shanpotimer = false;
+            }
     }
 
     bool Commander::isinpo(std::vector<geometry_msgs::msg::PoseStamped> area, geometry_msgs::msg::PoseStamped goal){

@@ -37,7 +37,7 @@
 #include "auto_aim_interfaces/msg/target.hpp"
 #include "rm_decision_interfaces/msg/to_serial.hpp"
 #include "rm_decision_interfaces/msg/from_serial.hpp"
-
+#include "rm_decision_interfaces/msg/to_auto_aim.hpp"
 
 #include <sensor_msgs/msg/laser_scan.hpp>
 //behave tree
@@ -51,28 +51,6 @@
 
 namespace rm_decision {
 
-// struct ReceivePacket
-//     {
-//     uint8_t header = 0x5A;
-
-//     //以下是自瞄的数据
-//     uint8_t detect_color;  // 0-red 1-blue 发1
-//     float yaw;               // rad
-//     float pitch;
-
-//     //以下是导航的数据
-//     uint8_t game_progress;  // 4：比赛进行中
-
-//     //以下是增益点信息
-//     uint32_t rfid_status; //bit 19：已到达增益点
-//     uint32_t event_data; //bit 30-31：中心增益点的占领情况，0 为未被占领，1 为被己方占领，2 为被对方占领，3 为被双方占领
-
-//     //接收其它机器人弹量（半自动哨兵？）
-//     uint8_t supply_robot_id;
-//     uint8_t supply_projectile_num;
-
-//     uint16_t checksum = 0;     // crc16校验位 https://blog.csdn.net/ydyuse/article/details/105395368
-//     }__attribute__((packed));
 
     class Commander;
 
@@ -193,7 +171,7 @@ namespace rm_decision {
         std::vector<geometry_msgs::msg::PoseStamped> self_addhp_point;
         std::vector<geometry_msgs::msg::PoseStamped> self_base_point;
         std::vector<geometry_msgs::msg::PoseStamped> S1_Stop_Engineer_point;
-        std::vector<geometry_msgs::msg::PoseStamped> S1_Stop_Hero_point;
+        std::vector<geometry_msgs::msg::PoseStamped> S1_Stop_Hero_points;
         std::vector<geometry_msgs::msg::PoseStamped> S1_Outpost_point;
         std::vector<geometry_msgs::msg::PoseStamped> S2_Outpose_point;
         std::vector<geometry_msgs::msg::PoseStamped> S3_Patro_points;
@@ -210,7 +188,7 @@ namespace rm_decision {
 
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>> list_name = {Guard_points, self_addhp_point,
                                                                                self_base_point, S1_Stop_Engineer_point,
-                                                                               S1_Stop_Hero_point, S1_Outpost_point,
+                                                                               S1_Stop_Hero_points, S1_Outpost_point,
                                                                                S2_Outpose_point, S3_Patro_points,
                                                                                Guard_points2
                                                                                };
@@ -222,7 +200,6 @@ namespace rm_decision {
         geometry_msgs::msg::PoseStamped home;
         std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future;
         float diffyaw = 0.0 ;
-        bool shangpo = false;
         bool checkpo_shangpoing = false;
         bool checkgoal = true;
         bool first_start = false;
@@ -262,6 +239,7 @@ namespace rm_decision {
 
 
         //for bt
+        bool buy_ammo_ordered = false;
         int color; //1 red 2 blue
         bool gamestart = false;
         float self_hp = 400;
@@ -286,15 +264,37 @@ namespace rm_decision {
         bool shanpotimer = false;
         bool addhpfail = false;
         bool addhptimer = false;
-        //for test
-        bool testtimer = false;
-        std::chrono::steady_clock::time_point testTime;
-
-
+        int sentry_status;
         std::chrono::steady_clock::time_point start_time;
         std::chrono::steady_clock::time_point start_time2;
 
+        //一些参数文件
+        int not_buy_but_relive = 1;
+        int sentry_want_shangpo =2;
+        int addhp_threshold = 100; //加血阈值，低于这个血量就会去加血
+        int addhp_full_threshold = 400; //加血满阈值，防止哨兵到了加血点就回去
+        int defend_threshold = 4000; //当基地血量少于此值，就会触发防御模式
+        int buy_to_relive_goldcoin_threshold = 400; //当金币数大于此值，会请求花金币复活
 
+        //远程买弹的条件有两种 1、无敌且有钱 2、不无敌，但血多且有钱 下面的参数需要同时满足多个才会请求远程买弹
+        int buy_ammo_remotely_ammo_threshold_when_wudi = 50; //无敌时，子弹数小于此值
+        int buy_ammo_remotely_ammo_threshold_when_youdi = 50; //不无敌时，子弹数小于此值
+        int buy_ammo_remotely_hp_threshold_when_youdi = 50; //不无敌时，自身血量大于此值
+        int buy_ammo_remotely_goldcoin_threshold_when_wudi = 400; //无敌时，当金币数大于此值
+        int buy_ammo_remotely_goldcoin_threshold_when_youdi = 400; //不无敌时，当金币数大于此值
+
+        //花钱远程补血的条件 血少且钱多
+        int buy_hp_remotely_hp_threshold = 200;
+        int buy_hp_remotely_goldcoin_threshold = 300;
+
+        //回基地补弹条件 没弹有点钱
+        int buy_ammo_local_threshold = 50;
+        int buy_ammo_local_goldcoin_threshold = 200;
+
+        int self_outpose_threshold = 500; //当己方前哨站血量少于此值，会从出击策略转为防御策略
+        int buy_ammo_num_at_a_time = 100; //哨兵每一次买弹量
+
+        int time_to_stop_enginner = 5; //S1决策中，哨兵停留在工程点的时间
     private:
 
         rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
@@ -324,6 +324,8 @@ namespace rm_decision {
         rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
 
         rclcpp::Publisher<rm_decision_interfaces::msg::ToSerial>::SharedPtr sentry_cmd_pub_;
+        rclcpp::Publisher<rm_decision_interfaces::msg::ToAutoAim>::SharedPtr sentry_status_pub_;
+
 
         std::thread commander_thread_;
         std::thread executor_thread_;
@@ -363,16 +365,9 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myGoToStopHero_handle() {
-            goal.header.stamp = this->now();
-            goal.header.frame_id = "map";
-            goal.pose.position.x = S1_Stop_Hero_point[0].pose.position.x;
-            goal.pose.position.y = S1_Stop_Hero_point[0].pose.position.y;
-            goal.pose.position.z = S1_Stop_Hero_point[0].pose.position.z;
-            goal.pose.orientation.x = 0.0;
-            goal.pose.orientation.y = 0.0;
-            goal.pose.orientation.z = 0.0;
-            goal.pose.orientation.w = 1.0;
-            setState(std::make_shared<GoAndStayState>(this));
+            Patro_points = S1_Stop_Hero_points;
+            random = S1_Stop_Hero_points.begin();
+            setState(std::make_shared<PatrolState>(this));
         }
         void myS2GoToOutpose() {
             goal.header.stamp = this->now();
@@ -454,17 +449,22 @@ namespace rm_decision {
 
         void mybuytorelive_handle() {
             rm_decision_interfaces::msg::ToSerial msg;
-            msg.sentry_cmd |= (1 << 31);
+            if(not_buy_but_relive==1){
+                msg.sentry_cmd |= (1 << 31);
+            }
 
-            msg.sentry_cmd |= (1 << 30);
+            if(not_buy_but_relive== 1 && goldcoin >= buy_to_relive_goldcoin_threshold){
+                msg.sentry_cmd |= (1 << 30);
+            }
 
             sentry_cmd_pub_->publish(msg);
             // std::bitset<32> binary(msg.sentry_cmd);
         }
 
         void myBuyAmmo_handle(){
+            buy_ammo_ordered = true;
             if(!ammoBought){
-                buy_ammo_num = buy_ammo_num + 100;
+                buy_ammo_num = buy_ammo_num + buy_ammo_num_at_a_time;
                 ammoBought = true;
             }
             rm_decision_interfaces::msg::ToSerial msg;
@@ -514,14 +514,14 @@ namespace rm_decision {
 
 
         BT::NodeStatus IfAddHp() {
-            if (self_hp <= 390) {
+            if (self_hp <= addhp_threshold) {
                 addhp_ordered = true;
             }
-            if (self_hp == 400) {
+            if (self_hp == addhp_full_threshold) {
                 addhp_ordered = false;
             }
             if(!addhpfail){
-                if (addhp_ordered && self_ammo < 50) {
+                if (addhp_ordered || buy_ammo_ordered) {
                     return BT::NodeStatus::SUCCESS;
                 }
                 else {
@@ -534,13 +534,11 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfDefend() {
-            // if (self_base <= 150) {
-            //     return BT::NodeStatus::SUCCESS;
-            // } else {
-            //     return BT::NodeStatus::FAILURE;
-            // }
-            return BT::NodeStatus::FAILURE;
-
+             if (self_base <= defend_threshold) {
+                 return BT::NodeStatus::SUCCESS;
+             } else {
+                 return BT::NodeStatus::FAILURE;
+             }
         }
 
         BT::NodeStatus IfAttack() {
@@ -559,16 +557,16 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfBuyToRelive() {
-            if (self_hp == 0 && goldcoin > 300) {
+            if (self_hp == 0 ) {
                 return BT::NodeStatus::SUCCESS;
             } else return BT::NodeStatus::FAILURE;
         };
 
         BT::NodeStatus IfBuyAmmoRemotely() {
-            if (self_hp >= 300 && goldcoin > 300 && self_ammo < 50) {
+            if (self_hp >= buy_ammo_remotely_hp_threshold_when_youdi && goldcoin > buy_ammo_remotely_goldcoin_threshold_when_youdi && self_ammo < buy_ammo_remotely_ammo_threshold_when_youdi) {
                 return BT::NodeStatus::SUCCESS;
             }
-            else if (self_ammo < 50 && goldcoin > 150 && self_outpost >0) {
+            else if (self_ammo < buy_ammo_remotely_ammo_threshold_when_wudi && goldcoin > buy_ammo_remotely_goldcoin_threshold_when_wudi && self_outpost >0) {
                 return BT::NodeStatus::SUCCESS;
 
             }
@@ -579,7 +577,7 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfBuyHp() {
-            if(self_hp < 200 && goldcoin > 300){
+            if(self_hp < buy_hp_remotely_hp_threshold && goldcoin > buy_hp_remotely_goldcoin_threshold){
                 return BT::NodeStatus::SUCCESS;
             }
             else {
@@ -590,18 +588,19 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfBuyAmmo() {
-            if(self_ammo < 50 && goldcoin > 300){
+            if(self_ammo < buy_ammo_local_threshold && goldcoin > buy_ammo_local_goldcoin_threshold){
                 return BT::NodeStatus::SUCCESS;
             }
             else {
                 ammoBought = false;
+                buy_ammo_ordered = false;
                 return BT::NodeStatus::FAILURE;
             }
         }
 
 
         BT::NodeStatus IfGoToEnemyOutpose() {
-            if(self_outpost > 1490){
+            if(enemy_outpost_hp > 0){
                 return BT::NodeStatus::SUCCESS;
             }
             else return BT::NodeStatus::FAILURE;
@@ -618,10 +617,13 @@ namespace rm_decision {
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus IfOutposeAlive() {
-            if(self_outpost >= 1480){
+            if(self_outpost >= self_outpose_threshold){
                 return BT::NodeStatus::SUCCESS;
             }
-            else return BT::NodeStatus::FAILURE;  
+            else {
+                sentry_status = 0;
+                return BT::NodeStatus::FAILURE;
+            }
         }
         BT::NodeStatus S1() {
             if(strategy==1){
@@ -693,6 +695,8 @@ namespace rm_decision {
 
         BT::NodeStatus GoToEnemyOutpose_handle() {
             myGoToEnemyOutpose_handle();
+            if(nav_state ==1)
+                sentry_status = 2;
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus BuyAmmo_handle() {
@@ -701,26 +705,34 @@ namespace rm_decision {
         }
         BT::NodeStatus GoToStopEngineer_handle() {
             myGoToStopEngineer_handle();
+            sentry_status = 1;
             if (nav_state == 1) {
-                stop_engineer_goal_reached = true;
-                std::this_thread::sleep_for(std::chrono::seconds(5));
-                stop_engineer_finished = true;
-            }                 
-                return BT::NodeStatus::SUCCESS;
-
-            }
+                    stop_engineer_goal_reached = true;
+                    std::this_thread::sleep_for(std::chrono::seconds(time_to_stop_enginner));
+                    stop_engineer_finished = true;
+                }
+                    return BT::NodeStatus::SUCCESS;
+        }
         
         BT::NodeStatus GoToStopHero_handle() {
             myGoToStopHero_handle();
+            sentry_status = 1;
             return BT::NodeStatus::SUCCESS;
         }
 
         BT::NodeStatus S2GoToOutpose() {
             myS2GoToOutpose();
+            if(nav_state == 1){
+                sentry_status = 2;
+            }
+            else{
+                sentry_status = 1 ;
+            }
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus S3Patro() {
             myS3Patro();
+            sentry_status = 1;
             return BT::NodeStatus::SUCCESS;
         }
 
