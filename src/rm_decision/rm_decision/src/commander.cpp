@@ -148,6 +148,7 @@ namespace rm_decision {
         factory.registerSimpleCondition("S2", std::bind(&Commander::S2, this));
         factory.registerSimpleCondition("S3", std::bind(&Commander::S3, this));
         factory.registerSimpleCondition("wait_for_start", std::bind(&Commander::wait_for_start, this));
+        factory.registerSimpleCondition("IfDefendOutpose",std::bind(&Commander::IfDefendOutpose,this));
 
         factory.registerSimpleAction("BuyAmmoRemotely_handle", std::bind(&Commander::BuyAmmoRemotely_handle, this));
         factory.registerSimpleAction("BuyAmmo_handle", std::bind(&Commander::BuyAmmo_handle, this));
@@ -163,6 +164,7 @@ namespace rm_decision {
         factory.registerSimpleAction("addhp_handle", std::bind(&Commander::addhp_handle, this));
         factory.registerSimpleAction("attack_handle", std::bind(&Commander::attack_handle, this));
         factory.registerSimpleAction("defend_handle", std::bind(&Commander::defend_handle, this));
+        factory.registerSimpleAction("S2DefendOutpose", std::bind(&Commander::S2DefendOutpose, this));
 
         auto tree = factory.createTreeFromFile("./src/rm_decision/rm_decision/config/sentry_bt.xml"); //official
         // auto tree = factory.createTreeFromFile("./rm_decision/config/sentry_bt.xml");  //for debug
