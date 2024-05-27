@@ -172,7 +172,7 @@ namespace rm_decision {
             //RCLCPP_INFO(this->get_logger(), "自身血量: %f, 自身弹量: %f, 自身金币: %f color: %d, gamestary: %d, enemy_outpose: %d, self_outpose:%f",self_hp,self_ammo,goldcoin,color,gamestart,enemy_outpost_hp,self_outpost);
 
             rm_decision_interfaces::msg::ToAutoAim msg;
-            msg.status = sentry_status;
+            msg.target = sentry_status;
             sentry_status_pub_->publish(msg);
             r.sleep();
         }
@@ -288,8 +288,10 @@ namespace rm_decision {
         std::vector<double> pose_list;
         std::vector<std::string> route_list = {"Guard_points", "self_addhp_point", "self_base_point",
                                                "S1_Stop_Engineer_point", "S1_Stop_Hero_points", "S1_Outpost_point",
-                                               "S2_Outpose_point", "S3_Patro_points","Guard_points2"};
-        
+                                               "S2_Outpose_point", "S2_Defend_point",
+                                               "S3_Patro_points",
+                                               "Guard_points2", "Guard_points3"};
+
         std::vector<std::string> area_list = {"po_area1", "po_area2", "po_area3"};
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator list = list_name.begin();
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area = po_name.begin();
@@ -323,8 +325,10 @@ namespace rm_decision {
         S1_Stop_Hero_points = list_name.at(4);
         S1_Outpost_point = list_name.at(5);
         S2_Outpose_point = list_name.at(6);
-        S3_Patro_points = list_name.at(7);
-        Guard_points2 = list_name.at(8);
+        S2_Defend_point = list_name.at(7);
+        S3_Patro_points = list_name.at(8);
+        Guard_points2 = list_name.at(9);
+        Guard_points3 = list_name.at(10);
     }
     void Commander::checkpo(){
       std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area;
@@ -379,6 +383,16 @@ namespace rm_decision {
             self_base = msg->blue_base_hp;
             self_outpost = msg->blue_outpost_hp;
             enemy_outpost_hp = msg->red_outpost_hp;
+        }
+        if(init){
+            call_goal.pose.position.x = msg-> target_pos_x;
+            call_goal.pose.position.y = msg-> target_pos_y;
+            init = false;
+        }
+        if( msg-> target_pos_x != call_goal.pose.position.x || msg-> target_pos_y != call_goal.pose.position.y){
+            call_goal.pose.position.x = msg-> target_pos_x;
+            call_goal.pose.position.y = msg-> target_pos_y;
+            is_called = true;
         }
     }
 

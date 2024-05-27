@@ -21,6 +21,7 @@
         <Condition ID="IfBuyToRelive" editable="true"/>
         <Condition ID="IfDefend" editable="true"/>
         <Condition ID="IfGoToEnemyOutpose" editable="true"/>
+        <Condition ID="IfDefendOutpose" editable="true"/>
         <Condition ID="IfGoToStopEngineer" editable="true"/>
         <Condition ID="IfGoToStopHero" editable="true"/>
         <Condition ID="IfGuard" editable="true"/>
@@ -29,6 +30,7 @@
         <Condition ID="S1" editable="true"/>
         <Condition ID="S2" editable="true"/>
         <Action ID="S2GoToOutpose" editable="true"/>
+        <Action ID="S2DefendOutpose" editable="true"/>
         <Condition ID="S3" editable="true"/>
         <Action ID="S3Patro" editable="true"/>
         <Action ID="addhp_handle" editable="true"/>

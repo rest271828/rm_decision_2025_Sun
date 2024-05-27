@@ -167,6 +167,7 @@ namespace rm_decision {
         // 导航点
         std::vector<geometry_msgs::msg::PoseStamped> Guard_points;
         std::vector<geometry_msgs::msg::PoseStamped> Guard_points2;
+        std::vector<geometry_msgs::msg::PoseStamped> Guard_points3;
 
         std::vector<geometry_msgs::msg::PoseStamped> self_addhp_point;
         std::vector<geometry_msgs::msg::PoseStamped> self_base_point;
@@ -174,6 +175,7 @@ namespace rm_decision {
         std::vector<geometry_msgs::msg::PoseStamped> S1_Stop_Hero_points;
         std::vector<geometry_msgs::msg::PoseStamped> S1_Outpost_point;
         std::vector<geometry_msgs::msg::PoseStamped> S2_Outpose_point;
+        std::vector<geometry_msgs::msg::PoseStamped> S2_Defend_point;
         std::vector<geometry_msgs::msg::PoseStamped> S3_Patro_points;
 
         std::vector<geometry_msgs::msg::PoseStamped> Patro_points;
@@ -185,12 +187,11 @@ namespace rm_decision {
         std::vector<geometry_msgs::msg::PoseStamped> po_area3;
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>> po_name = {po_area1, po_area2, po_area3};
 
-
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>> list_name = {Guard_points, self_addhp_point,
                                                                                self_base_point, S1_Stop_Engineer_point,
                                                                                S1_Stop_Hero_points, S1_Outpost_point,
-                                                                               S2_Outpose_point, S3_Patro_points,
-                                                                               Guard_points2
+                                                                               S2_Outpose_point, S2_Defend_point, S3_Patro_points,
+                                                                               Guard_points2, Guard_points3
                                                                                };
         std::vector<geometry_msgs::msg::PoseStamped>::iterator random;
         std::vector<geometry_msgs::msg::PoseStamped>::iterator attack;
@@ -198,6 +199,7 @@ namespace rm_decision {
         std::vector<geometry_msgs::msg::PoseStamped>::iterator move;
         geometry_msgs::msg::PoseStamped goal;
         geometry_msgs::msg::PoseStamped home;
+        geometry_msgs::msg::PoseStamped call_goal;
         std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future;
         float diffyaw = 0.0 ;
         bool checkpo_shangpoing = false;
@@ -236,7 +238,7 @@ namespace rm_decision {
         geometry_msgs::msg::PoseStamped enemypose;
         bool tracking = false;
         bool buxue = false;
-
+        bool is_called = false;
 
         //for bt
         bool buy_ammo_ordered = false;
@@ -247,8 +249,10 @@ namespace rm_decision {
         float self_base = 400;
         float self_outpost = 1500;
         int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
+        int line = 0;  
         float goldcoin;
         bool defend_order_goal_reached = false;
+        bool dead = false; 
         int strategy;
         bool addhp_ordered;
         int buy_ammo_num=0;
@@ -264,9 +268,12 @@ namespace rm_decision {
         bool shanpotimer = false;
         bool addhpfail = false;
         bool addhptimer = false;
+        bool calltimer = false;
+        bool init = true;
         int sentry_status;
         std::chrono::steady_clock::time_point start_time;
         std::chrono::steady_clock::time_point start_time2;
+        std::chrono::steady_clock::time_point call_start_time;
 
         //一些参数文件
         int not_buy_but_relive = 1;
@@ -345,6 +352,27 @@ namespace rm_decision {
 
         void mygimbal_handle() {
             std::cout << "mygimbal_handle is called" << std::endl;
+            goal.header.stamp = this->now();
+            goal.header.frame_id = "map";
+            goal.pose.position.x = call_goal.pose.position.x;
+            goal.pose.position.y = call_goal.pose.position.y;
+            goal.pose.position.z = 0.0;
+            goal.pose.orientation.x = 0.0;
+            goal.pose.orientation.y = 0.0;
+            goal.pose.orientation.z = 0.0;
+            goal.pose.orientation.w = 1.0;
+            setState(std::make_shared<GoAndStayState>(this));
+            if (calltimer == false)
+            {
+                call_start_time = std::chrono::steady_clock::now();
+                calltimer = true;
+            }
+            auto now = std::chrono::steady_clock::now();
+            if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time2).count() >= 30)
+            {
+                is_called = false;
+                calltimer = false;
+            }
         }
         void myGoToEnemyOutpose_handle() {
             goal.header.stamp = this->now();
@@ -371,8 +399,11 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myGoToStopHero_handle() {
+            if(line != 1){
+            line = 1;
             Patro_points = S1_Stop_Hero_points;
-            random = S1_Stop_Hero_points.begin();
+            random = Patro_points.begin();
+            }
             setState(std::make_shared<PatrolState>(this));
         }
         void myS2GoToOutpose() {
@@ -387,9 +418,25 @@ namespace rm_decision {
             goal.pose.orientation.w = 1.0;
             setState(std::make_shared<GoAndStayState>(this));
         }
+
+        void myS2DefendOutpose() {
+            goal.header.stamp = this->now();
+            goal.header.frame_id = "map";
+            goal.pose.position.x = S2_Defend_point[0].pose.position.x;
+            goal.pose.position.y = S2_Defend_point[0].pose.position.y;
+            goal.pose.position.z = S2_Defend_point[0].pose.position.z;
+            goal.pose.orientation.x = 0.0;
+            goal.pose.orientation.y = 0.0;
+            goal.pose.orientation.z = 0.0;
+            goal.pose.orientation.w = 1.0;
+            setState(std::make_shared<GoAndStayState>(this));
+        }
         void myS3Patro(){
-            Patro_points = S3_Patro_points;
-            random = S3_Patro_points.begin();
+            if(line != 3){
+                Patro_points = S3_Patro_points;
+                random = Patro_points.begin();
+                line = 3;
+            }
             setState(std::make_shared<PatrolState>(this));
             }
 
@@ -442,26 +489,33 @@ namespace rm_decision {
         }
 
         void myguard_handle() {
-            if(!shangpofail){
+            if(!shangpofail && line != 2){
                 Patro_points = Guard_points;
-                random = Guard_points.begin();
+                random = Patro_points.begin();
+                line = 2;
             }
-            else if(shangpofail){
+            else if(shangpofail && line != 4){
                 Patro_points = Guard_points2;
-                random = Guard_points2.begin();
+                random = Patro_points.begin();
+                line = 4;
             }
-
+            if((self_hp == 0 || dead)&& line != 5){
+                Patro_points = Guard_points3;
+                random = Patro_points.begin();
+                line = 5;
+            }
             setState(std::make_shared<PatrolState>(this));
         }
 
         void mybuytorelive_handle() {
             rm_decision_interfaces::msg::ToSerial msg;
             if(not_buy_but_relive==1){
-                msg.sentry_cmd |= (1 << 31);
+                msg.sentry_cmd |= (1 << 0);
             }
 
             if(not_buy_but_relive== 1 && goldcoin >= buy_to_relive_goldcoin_threshold){
-                msg.sentry_cmd |= (1 << 30);
+                msg.sentry_cmd = 0;
+                msg.sentry_cmd |= (1 << 1);
             }
 
             sentry_cmd_pub_->publish(msg);
@@ -475,7 +529,7 @@ namespace rm_decision {
                 ammoBought = true;
             }
             rm_decision_interfaces::msg::ToSerial msg;
-            buy_ammo_num = buy_ammo_num << (31 - 12); 
+            buy_ammo_num = buy_ammo_num << 13; 
             msg.sentry_cmd = msg.sentry_cmd | buy_ammo_num;
 
             sentry_cmd_pub_->publish(msg);
@@ -488,7 +542,7 @@ namespace rm_decision {
             }
 
             rm_decision_interfaces::msg::ToSerial msg;
-            remote_buy_ammo_times = remote_buy_ammo_times << (31 - 16);
+            remote_buy_ammo_times = remote_buy_ammo_times << 17;
             msg.sentry_cmd = msg.sentry_cmd | remote_buy_ammo_times;
             sentry_cmd_pub_->publish(msg);
         }
@@ -500,7 +554,7 @@ namespace rm_decision {
             }
 
             rm_decision_interfaces::msg::ToSerial msg;
-            buy_hp_times = buy_hp_times << (31 - 20);
+            buy_hp_times = buy_hp_times << 21;
             msg.sentry_cmd = msg.sentry_cmd | buy_hp_times;
             sentry_cmd_pub_->publish(msg);
         }
@@ -514,7 +568,12 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfAsked() {
-            return BT::NodeStatus::FAILURE;
+            if(is_called){
+                return BT::NodeStatus::SUCCESS;
+            }
+            else{
+                return BT::NodeStatus::FAILURE;
+            }
         }
 
 
@@ -622,6 +681,12 @@ namespace rm_decision {
                     
         BT::NodeStatus IfGoToStopHero() {
             return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus IfDefendOutpose() {
+            if(enemy_outpost_hp > 0){
+                return BT::NodeStatus::SUCCESS;
+            }
+            else return BT::NodeStatus::FAILURE;
         }
         BT::NodeStatus IfOutposeAlive() {
             if(self_outpost >= self_outpose_threshold){
@@ -735,6 +800,12 @@ namespace rm_decision {
             else{
                 sentry_status = 1 ;
             }
+            return BT::NodeStatus::SUCCESS;
+        }
+        BT::NodeStatus S2DefendOutpose()
+        {
+            myS2DefendOutpose();
+            sentry_status = 0;
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus S3Patro() {

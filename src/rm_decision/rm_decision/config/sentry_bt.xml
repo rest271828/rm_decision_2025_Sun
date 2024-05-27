@@ -33,9 +33,15 @@
                 </Sequence>
                 <Sequence>
                   <S2/>
-                  <Sequence>
-                    <S2GoToOutpose/>
-                  </Sequence>
+                  <Fallback>
+                    <Sequence>
+                      <IfDefendOutpose/>
+                      <S2GoToOutpose/>
+                    </Sequence>
+                    <Sequence>
+                      <S2DefendOutpose/>
+                    </Sequence>
+                  </Fallback>
                 </Sequence>
                 <Sequence>
                   <S3/>
