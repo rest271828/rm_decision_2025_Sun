@@ -193,6 +193,11 @@ namespace rm_decision {
                 checkpo();
                 canshangpo();
             }
+            if(state != change_state){
+                RCLCPP_INFO(this->get_logger(), "状态改变");
+                checkgoal = true;
+                state = change_state;
+            }
             r.sleep();
         }
     }
@@ -245,21 +250,26 @@ namespace rm_decision {
                 RCLCPP_INFO(this->get_logger(), "Goal was reached!");
                 nav_state = 1;
                 checkgoal = true;
+                failed_count = 0;
+                endtime = std::chrono::steady_clock::now();
                 break;
             case rclcpp_action::ResultCode::ABORTED:
                 RCLCPP_INFO(this->get_logger(), "Goal was aborted");
                 nav_state = 2;
                 checkgoal = true;
+                failed_count ++;
                 break;
             case rclcpp_action::ResultCode::CANCELED:
                 RCLCPP_INFO(this->get_logger(), "Goal was canceled");
                 nav_state = 3;
                 checkgoal = true;
+                failed_count ++;
                 break;
             default:
                 RCLCPP_INFO(get_logger(), "Unknown result code");
                 nav_state = 4;
                 checkgoal = true;
+                failed_count ++;
                 break;
         }
     }
@@ -459,7 +469,7 @@ namespace rm_decision {
 
     // 巡逻模式
     void PatrolState::handle() {
-        if (commander->checkgoal) {
+        if (commander->checkgoal && std::chrono::steady_clock::now()-commander->endtime > 3s) {
             commander->nav_to_pose(*commander->random);
             commander->random++;
             if (commander->random == commander->Patro_points.end()) {
@@ -525,8 +535,8 @@ namespace rm_decision {
         currentpose.pose.position.y = odom_msg.transform.translation.y;
         currentpose.pose.position.z = odom_msg.transform.translation.z;
         currentpose.pose.orientation = odom_msg.transform.rotation;
-        RCLCPP_INFO(this->get_logger(), "当前位置: %.2f, %.2f, %.2f", currentpose.pose.position.x,
-                    currentpose.pose.position.y, currentpose.pose.position.z);
+        // RCLCPP_INFO(this->get_logger(), "当前位置: %.2f, %.2f, %.2f", currentpose.pose.position.x,
+        //             currentpose.pose.position.y, currentpose.pose.position.z);
     }
 
 

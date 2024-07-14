@@ -242,6 +242,7 @@ namespace rm_decision {
 
         //for bt
         bool buy_ammo_ordered = false;
+        bool back = false;
         int color; //1 red 2 blue
         bool gamestart = false;
         float self_hp = 400;
@@ -249,7 +250,8 @@ namespace rm_decision {
         float self_base = 400;
         float self_outpost = 1500;
         int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
-        int line = 0;  
+        int line = 0;
+        int failed_count = 0;  
         float goldcoin;
         bool defend_order_goal_reached = false;
         bool dead = false; 
@@ -271,7 +273,10 @@ namespace rm_decision {
         bool calltimer = false;
         bool init = true;
         int sentry_status;
+        int state = 0;
+        int change_state;
         std::chrono::steady_clock::time_point start_time;
+        std::chrono::steady_clock::time_point endtime;
         std::chrono::steady_clock::time_point start_time2;
         std::chrono::steady_clock::time_point call_start_time;
 
@@ -375,6 +380,9 @@ namespace rm_decision {
             }
         }
         void myGoToEnemyOutpose_handle() {
+            change_state = 1;
+            std::cout << "gotoEO" << std::endl;
+
             goal.header.stamp = this->now();
             goal.header.frame_id = "map";
             goal.pose.position.x = S1_Outpost_point[0].pose.position.x;
@@ -387,6 +395,7 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myGoToStopEngineer_handle() {
+            std::cout << "gotoE" << std::endl;
             goal.header.stamp = this->now();
             goal.header.frame_id = "map";
             goal.pose.position.x = S1_Stop_Engineer_point[0].pose.position.x;
@@ -399,6 +408,8 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myGoToStopHero_handle() {
+            change_state = 2;
+            std::cout << "gotoH" << std::endl;
             if(line != 1){
             line = 1;
             Patro_points = S1_Stop_Hero_points;
@@ -407,6 +418,8 @@ namespace rm_decision {
             setState(std::make_shared<PatrolState>(this));
         }
         void myS2GoToOutpose() {
+            change_state = 3;
+            std::cout << "S2gotoO" << std::endl;
             goal.header.stamp = this->now();
             goal.header.frame_id = "map";
             goal.pose.position.x = S2_Outpose_point[0].pose.position.x;
@@ -420,6 +433,8 @@ namespace rm_decision {
         }
 
         void myS2DefendOutpose() {
+            change_state = 4;
+            std::cout << "S2DO" << std::endl;
             goal.header.stamp = this->now();
             goal.header.frame_id = "map";
             goal.pose.position.x = S2_Defend_point[0].pose.position.x;
@@ -432,6 +447,8 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myS3Patro(){
+            change_state = 5;   
+            std::cout << "S3" << std::endl;
             if(line != 3){
                 Patro_points = S3_Patro_points;
                 random = Patro_points.begin();
@@ -441,6 +458,7 @@ namespace rm_decision {
             }
 
         void myaddhp_handle() {
+            change_state = 6;
             std::cout << "addhp_handle is called" << std::endl;
             goal.header.stamp = this->now();
             goal.header.frame_id = "map";
@@ -466,6 +484,7 @@ namespace rm_decision {
         }
 
         void mydefend_handle() {
+            change_state = 7;
             if (!defend_order_goal_reached) {
                 std::cout << "defend_handle is called" << std::endl;
                 goal.header.stamp = this->now();
@@ -489,6 +508,8 @@ namespace rm_decision {
         }
 
         void myguard_handle() {
+            change_state = 8;
+            std::cout << "guard_handle" << std::endl;
             if(!shangpofail && line != 2){
                 Patro_points = Guard_points;
                 random = Patro_points.begin();
@@ -523,7 +544,7 @@ namespace rm_decision {
         }
 
         void myBuyAmmo_handle(){
-            buy_ammo_ordered = true;
+            buy_ammo_ordered = false;
             if(!ammoBought){
                 buy_ammo_num = buy_ammo_num + buy_ammo_num_at_a_time;
                 ammoBought = true;
@@ -561,6 +582,7 @@ namespace rm_decision {
 
         BT::NodeStatus wait_for_start() {
             if (gamestart) {
+                std::cout << "gamestart" << std::endl;
                 return BT::NodeStatus::FAILURE;
             } else {
                 return BT::NodeStatus::SUCCESS;
@@ -580,7 +602,7 @@ namespace rm_decision {
 
 
         BT::NodeStatus IfAddHp() {
-            if (self_hp <= addhp_threshold) {
+            if (self_hp <= addhp_threshold ) {
                 addhp_ordered = true;
             }
             if (self_hp == addhp_full_threshold) {
@@ -600,7 +622,7 @@ namespace rm_decision {
         }
 
         BT::NodeStatus IfDefend() {
-             if (self_base <= defend_threshold) {
+             if (self_base <= defend_threshold && false) {
                  return BT::NodeStatus::SUCCESS;
              } else {
                  return BT::NodeStatus::FAILURE;
@@ -666,34 +688,49 @@ namespace rm_decision {
 
 
         BT::NodeStatus IfGoToEnemyOutpose() {
-            if(enemy_outpost_hp > 0){
+            if(enemy_outpost_hp > 0 ){
                 return BT::NodeStatus::SUCCESS;
             }
             else return BT::NodeStatus::FAILURE;
         }
 
         BT::NodeStatus IfGoToStopEngineer() {
-            if(stop_engineer_finished){
+            if(stop_engineer_finished ){
                 return BT::NodeStatus::FAILURE;
             }
             else return BT::NodeStatus::SUCCESS;
         }
                     
         BT::NodeStatus IfGoToStopHero() {
-            return BT::NodeStatus::SUCCESS;
+            return BT::NodeStatus::FAILURE;
         }
         BT::NodeStatus IfDefendOutpose() {
-            if(enemy_outpost_hp > 0){
+            if(enemy_outpost_hp > 0 ){
                 return BT::NodeStatus::SUCCESS;
             }
             else return BT::NodeStatus::FAILURE;
         }
         BT::NodeStatus IfOutposeAlive() {
-            if(self_outpost >= self_outpose_threshold){
+            if(self_outpost >= self_outpose_threshold && self_ammo >= 30){
                 return BT::NodeStatus::SUCCESS;
             }
             else {
                 sentry_status = 0;
+                if(!back){
+                    geometry_msgs::msg::PoseStamped goal_pose;
+                    goal_pose.header.stamp = this->now();
+                    goal_pose.header.frame_id = "map";
+                    goal_pose.pose.position.x = S1_Stop_Engineer_point[0].pose.position.x;
+                    goal_pose.pose.position.y = S1_Stop_Engineer_point[0].pose.position.y;
+                    goal_pose.pose.position.z = S1_Stop_Engineer_point[0].pose.position.z;
+                    goal_pose.pose.orientation.x = 0.0;
+                    goal_pose.pose.orientation.y = 0.0;
+                    goal_pose.pose.orientation.z = 0.0;
+                    goal_pose.pose.orientation.w = 1.0;
+                    nav_to_pose(goal_pose);
+                    checkgoal = false;
+                    back = true;
+                }
                 return BT::NodeStatus::FAILURE;
             }
         }
@@ -747,6 +784,7 @@ namespace rm_decision {
 
         BT::NodeStatus Guard() {
             myguard_handle();
+            std::cout << "Guard" << std::endl;
             return BT::NodeStatus::SUCCESS;
         }
 
@@ -767,8 +805,7 @@ namespace rm_decision {
 
         BT::NodeStatus GoToEnemyOutpose_handle() {
             myGoToEnemyOutpose_handle();
-            if(nav_state ==1)
-                sentry_status = 2;
+            sentry_status = 2;
             return BT::NodeStatus::SUCCESS;
         }
         BT::NodeStatus BuyAmmo_handle() {
