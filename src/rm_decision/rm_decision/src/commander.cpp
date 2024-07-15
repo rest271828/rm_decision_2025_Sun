@@ -67,9 +67,11 @@ namespace rm_decision {
         this->declare_parameter<int>("buy_ammo_remotely_hp_threshold_when_youdi", 50);
         this->get_parameter("buy_ammo_remotely_hp_threshold_when_youdi", buy_ammo_remotely_hp_threshold_when_youdi);
         this->declare_parameter<int>("buy_ammo_remotely_goldcoin_threshold_when_wudi", 400);
-        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_wudi", buy_ammo_remotely_goldcoin_threshold_when_wudi);
+        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_wudi",
+                            buy_ammo_remotely_goldcoin_threshold_when_wudi);
         this->declare_parameter<int>("buy_ammo_remotely_goldcoin_threshold_when_youdi", 400);
-        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_youdi", buy_ammo_remotely_goldcoin_threshold_when_youdi);
+        this->get_parameter("buy_ammo_remotely_goldcoin_threshold_when_youdi",
+                            buy_ammo_remotely_goldcoin_threshold_when_youdi);
         this->declare_parameter<int>("buy_hp_remotely_hp_threshold", 200);
         this->get_parameter("buy_hp_remotely_hp_threshold", buy_hp_remotely_hp_threshold);
         this->declare_parameter<int>("buy_hp_remotely_goldcoin_threshold", 300);
@@ -92,9 +94,9 @@ namespace rm_decision {
         this->get_parameter("shangpo_timeout", shangpo_timeout);
         this->declare_parameter<int>("if_open_movestats", 2);
         this->get_parameter("if_open_movestats", if_open_movestats);
-       
 
-        if(sentry_want_shangpo ==2){
+
+        if (sentry_want_shangpo == 2) {
             shangpofail = true;
         }
         RCLCPP_INFO(this->get_logger(), "开始");
@@ -148,7 +150,7 @@ namespace rm_decision {
         factory.registerSimpleCondition("S2", std::bind(&Commander::S2, this));
         factory.registerSimpleCondition("S3", std::bind(&Commander::S3, this));
         factory.registerSimpleCondition("wait_for_start", std::bind(&Commander::wait_for_start, this));
-        factory.registerSimpleCondition("IfDefendOutpose",std::bind(&Commander::IfDefendOutpose,this));
+        factory.registerSimpleCondition("IfDefendOutpose", std::bind(&Commander::IfDefendOutpose, this));
 
         factory.registerSimpleAction("BuyAmmoRemotely_handle", std::bind(&Commander::BuyAmmoRemotely_handle, this));
         factory.registerSimpleAction("BuyAmmo_handle", std::bind(&Commander::BuyAmmo_handle, this));
@@ -180,7 +182,6 @@ namespace rm_decision {
         }
 
     }
-    
 
 
     // 执行器线程
@@ -189,11 +190,11 @@ namespace rm_decision {
         while (rclcpp::ok()) {
             getcurrentpose();
             currentState->handle();
-            if(sentry_want_shangpo == 1){
+            if (sentry_want_shangpo == 1) {
                 checkpo();
                 canshangpo();
             }
-            if(state != change_state){
+            if (state != change_state) {
                 RCLCPP_INFO(this->get_logger(), "状态改变");
                 checkgoal = true;
                 state = change_state;
@@ -205,7 +206,7 @@ namespace rm_decision {
 
     // 改变状态
     void Commander::setState(std::shared_ptr<State> state) {
-        if (currentState != state && if_open_movestats==1) {
+        if (currentState != state && if_open_movestats == 1) {
             move_points_.clear();
         }
         currentState = state;
@@ -257,19 +258,19 @@ namespace rm_decision {
                 RCLCPP_INFO(this->get_logger(), "Goal was aborted");
                 nav_state = 2;
                 checkgoal = true;
-                failed_count ++;
+                failed_count++;
                 break;
             case rclcpp_action::ResultCode::CANCELED:
                 RCLCPP_INFO(this->get_logger(), "Goal was canceled");
                 nav_state = 3;
                 checkgoal = true;
-                failed_count ++;
+                failed_count++;
                 break;
             default:
                 RCLCPP_INFO(get_logger(), "Unknown result code");
                 nav_state = 4;
                 checkgoal = true;
-                failed_count ++;
+                failed_count++;
                 break;
         }
     }
@@ -308,13 +309,7 @@ namespace rm_decision {
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator list = list_name.begin();
         std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area = po_name.begin();
 
-        this->declare_parameter("home_pose", pose_list);
-        //如果战术要求可以读取多条路径
-        home.header.frame_id = "map";
-        home.header.stamp = this->now();
-        home.pose.position.x = this->get_parameter("home_pose").as_double_array()[0];
-        home.pose.position.y = this->get_parameter("home_pose").as_double_array()[1];
-        home.pose.position.z = this->get_parameter("home_pose").as_double_array()[2];
+
         for (auto it = route_list.begin(); it != route_list.end(); it++) {
             this->declare_parameter(*it, pose_list);
             auto pose_param = this->get_parameter(*it).as_double_array();
@@ -322,14 +317,13 @@ namespace rm_decision {
             RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*list).size());
             list++;
         }
-        for (auto it = area_list.begin(); it != area_list.end(); it++)
-      {
-         this->declare_parameter(*it, pose_list);
-         auto pose_param = this->get_parameter(*it).as_double_array();
-         processPoses(pose_param, *area);
-         RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*area).size());
-         area ++;
-      }
+        for (auto it = area_list.begin(); it != area_list.end(); it++) {
+            this->declare_parameter(*it, pose_list);
+            auto pose_param = this->get_parameter(*it).as_double_array();
+            processPoses(pose_param, *area);
+            RCLCPP_INFO(this->get_logger(), "%s随机导航点个数: %ld", it->c_str(), (*area).size());
+            area++;
+        }
         Guard_points = list_name.at(0);
         self_addhp_point = list_name.at(1);
         self_base_point = list_name.at(2);
@@ -342,24 +336,25 @@ namespace rm_decision {
         Guard_points2 = list_name.at(9);
         Guard_points3 = list_name.at(10);
     }
-    void Commander::checkpo(){
-      std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area;
-      uint i = 0;
-      for ( i = 0; i != po_name.size(); i ++){
-         if(isinpo(po_name[i],currentpose)){
-            checkpo_shangpoing = true;
-            diffyaw = getyawdiff(po_name[i][0],po_name[i][1]);
-            // RCLCPP_INFO(this->get_logger(), "在坡 diffyaw=%f", diffyaw);
-            break;
-         }
-      }
-         if(i == po_name.size()){
+
+    void Commander::checkpo() {
+        std::vector<std::vector<geometry_msgs::msg::PoseStamped>>::iterator area;
+        uint i = 0;
+        for (i = 0; i != po_name.size(); i++) {
+            if (isinpo(po_name[i], currentpose)) {
+                checkpo_shangpoing = true;
+                diffyaw = getyawdiff(po_name[i][0], po_name[i][1]);
+                // RCLCPP_INFO(this->get_logger(), "在坡 diffyaw=%f", diffyaw);
+                break;
+            }
+        }
+        if (i == po_name.size()) {
             checkpo_shangpoing = false;
             diffyaw = 0;
             // RCLCPP_INFO(this->get_logger(), "no po");
-         }
+        }
 
-      }
+    }
 
     // 加载敌军hp
     uint Commander::enemyhp() {
@@ -396,14 +391,14 @@ namespace rm_decision {
             self_outpost = msg->blue_outpost_hp;
             enemy_outpost_hp = msg->red_outpost_hp;
         }
-        if(init){
-            call_goal.pose.position.x = msg-> target_pos_x;
-            call_goal.pose.position.y = msg-> target_pos_y;
+        if (init) {
+            call_goal.pose.position.x = msg->target_pos_x;
+            call_goal.pose.position.y = msg->target_pos_y;
             init = false;
         }
-        if( msg-> target_pos_x != call_goal.pose.position.x || msg-> target_pos_y != call_goal.pose.position.y){
-            call_goal.pose.position.x = msg-> target_pos_x;
-            call_goal.pose.position.y = msg-> target_pos_y;
+        if (msg->target_pos_x != call_goal.pose.position.x || msg->target_pos_y != call_goal.pose.position.y) {
+            call_goal.pose.position.x = msg->target_pos_x;
+            call_goal.pose.position.y = msg->target_pos_y;
             is_called = true;
         }
     }
@@ -431,45 +426,47 @@ namespace rm_decision {
         return dis;
     }
 
-    void Commander::canshangpo(){
+    void Commander::canshangpo() {
         if (!shangpofail && !shanpotimer) {
             start_time = std::chrono::steady_clock::now();
             shanpotimer = true;
-            }
+        }
         auto now = std::chrono::steady_clock::now();
         if (std::chrono::duration_cast<std::chrono::seconds>(now - start_time).count() >= shangpo_timeout) {
-            if(checkpo_shangpoing){
+            if (checkpo_shangpoing) {
                 shangpofail = true;
             }
             shanpotimer = false;
-            }
+        }
     }
 
-    bool Commander::isinpo(std::vector<geometry_msgs::msg::PoseStamped> area, geometry_msgs::msg::PoseStamped goal){
-         uint i, j;
-         bool c = false;
-         for (i = 0, j = area.size() - 1; i < area.size(); j = i++)
-         {
-            if (((area[i].pose.position.y > goal.pose.position.y) != (area[j].pose.position.y > goal.pose.position.y)) &&
-               (goal.pose.position.x < (area[j].pose.position.x - area[i].pose.position.x) * (goal.pose.position.y - area[i].pose.position.y) / (area[j].pose.position.y - area[i].pose.position.y) + area[i].pose.position.x))
-               c = !c;
-         }
-         return c;
+    bool Commander::isinpo(std::vector<geometry_msgs::msg::PoseStamped> area, geometry_msgs::msg::PoseStamped goal) {
+        uint i, j;
+        bool c = false;
+        for (i = 0, j = area.size() - 1; i < area.size(); j = i++) {
+            if (((area[i].pose.position.y > goal.pose.position.y) !=
+                 (area[j].pose.position.y > goal.pose.position.y)) &&
+                (goal.pose.position.x < (area[j].pose.position.x - area[i].pose.position.x) *
+                                        (goal.pose.position.y - area[i].pose.position.y) /
+                                        (area[j].pose.position.y - area[i].pose.position.y) + area[i].pose.position.x))
+                c = !c;
+        }
+        return c;
     }
 
-    float Commander::getyawdiff(geometry_msgs::msg::PoseStamped a, geometry_msgs::msg::PoseStamped b){
-       float diffyaw, goalyaw;
-       goalyaw = atan((b.pose.position.y - a.pose.position.y)/(b.pose.position.x - a.pose.position.x));
-    //    RCLCPP_INFO(this->get_logger(), "goal%f cur %f", goalyaw,currentpose.pose.orientation.z);
-       diffyaw = (goalyaw - asin(currentpose.pose.orientation.z)*2)*(180.0/M_PI);
-       diffyaw = fmod(diffyaw + 180, 360) - 180;
-       return diffyaw;
+    float Commander::getyawdiff(geometry_msgs::msg::PoseStamped a, geometry_msgs::msg::PoseStamped b) {
+        float diffyaw, goalyaw;
+        goalyaw = atan((b.pose.position.y - a.pose.position.y) / (b.pose.position.x - a.pose.position.x));
+        //    RCLCPP_INFO(this->get_logger(), "goal%f cur %f", goalyaw,currentpose.pose.orientation.z);
+        diffyaw = (goalyaw - asin(currentpose.pose.orientation.z) * 2) * (180.0 / M_PI);
+        diffyaw = fmod(diffyaw + 180, 360) - 180;
+        return diffyaw;
     }
 
 
     // 巡逻模式
     void PatrolState::handle() {
-        if (commander->checkgoal && std::chrono::steady_clock::now()-commander->endtime > 3s) {
+        if (commander->checkgoal && std::chrono::steady_clock::now() - commander->endtime > 3s) {
             commander->nav_to_pose(*commander->random);
             commander->random++;
             if (commander->random == commander->Patro_points.end()) {

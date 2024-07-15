@@ -251,10 +251,10 @@ namespace rm_decision {
         float self_outpost = 1500;
         int nav_state;  //1 for SUCCEEDED 2 for ABORTED 3 for CANCELED 4 for RUNNING
         int line = 0;
-        int failed_count = 0;  
+        int failed_count = 0;
         float goldcoin;
         bool defend_order_goal_reached = false;
-        bool dead = false; 
+        bool dead = false;
         int strategy;
         bool addhp_ordered;
         int buy_ammo_num=0;
@@ -447,7 +447,7 @@ namespace rm_decision {
             setState(std::make_shared<GoAndStayState>(this));
         }
         void myS3Patro(){
-            change_state = 5;   
+            change_state = 5;
             std::cout << "S3" << std::endl;
             if(line != 3){
                 Patro_points = S3_Patro_points;
@@ -470,7 +470,7 @@ namespace rm_decision {
             goal.pose.orientation.z = 0.0;
             goal.pose.orientation.w = 1.0;
             setState(std::make_shared<GoAndStayState>(this));
-            
+
             if (!addhptimer) {
                     start_time2 = std::chrono::steady_clock::now();
                     addhptimer = true;
@@ -550,7 +550,7 @@ namespace rm_decision {
                 ammoBought = true;
             }
             rm_decision_interfaces::msg::ToSerial msg;
-            buy_ammo_num = buy_ammo_num << 13; 
+            buy_ammo_num = buy_ammo_num << 13;
             msg.sentry_cmd = msg.sentry_cmd | buy_ammo_num;
 
             sentry_cmd_pub_->publish(msg);
@@ -700,7 +700,7 @@ namespace rm_decision {
             }
             else return BT::NodeStatus::SUCCESS;
         }
-                    
+
         BT::NodeStatus IfGoToStopHero() {
             return BT::NodeStatus::FAILURE;
         }
@@ -764,14 +764,14 @@ namespace rm_decision {
             myaddhp_handle();
             return BT::NodeStatus::SUCCESS;
         }
-            
+
 
 
         BT::NodeStatus defend_handle() {
             mydefend_handle();
             if (nav_state == 1) {
                 defend_order_goal_reached = false;
-            }                 
+            }
                 return BT::NodeStatus::SUCCESS;
         }
 
@@ -779,7 +779,7 @@ namespace rm_decision {
             myattack_handle();
 
             return BT::NodeStatus::SUCCESS;
- 
+
         }
 
         BT::NodeStatus Guard() {
@@ -822,7 +822,7 @@ namespace rm_decision {
                 }
                     return BT::NodeStatus::SUCCESS;
         }
-        
+
         BT::NodeStatus GoToStopHero_handle() {
             myGoToStopHero_handle();
             sentry_status = 1;
