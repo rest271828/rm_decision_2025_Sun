@@ -64,18 +64,18 @@ private:
     rclcpp::Subscription<rm_decision_interfaces::msg::RobotStatus>::SharedPtr robot_status_sub_;
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
 
-    void all_robot_hp_callback(const rm_decision_interfaces::msg::AllRobotHP& msg);
+    void all_robot_hp_callback(const rm_decision_interfaces::msg::AllRobotHP::SharedPtr msg);
 
-    void friend_location_callback(const rm_decision_interfaces::msg::FriendLocation& msg);
+    void friend_location_callback(const rm_decision_interfaces::msg::FriendLocation::SharedPtr msg);
 
-    void tracking_pose_callback(const geometry_msgs::msg::PointStamped::SharedPtr& msg);
+    void tracking_pose_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg);
 
-    void from_serial_callback(const rm_decision_interfaces::msg::FromSerial& msg);
+    void from_serial_callback(const rm_decision_interfaces::msg::FromSerial::SharedPtr msg);
 
-    void receive_serial_callback(const rm_decision_interfaces::msg::ReceiveSerial& msg);
+    void receive_serial_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg);
 
-    void robot_status_callback(const rm_decision_interfaces::msg::RobotStatus& msg);
+    void robot_status_callback(const rm_decision_interfaces::msg::RobotStatus::SharedPtr msg);
 
-    void target_callback(const auto_aim_interfaces::msg::Target& msg);
+    void target_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
 };
 }  // namespace RMDecision

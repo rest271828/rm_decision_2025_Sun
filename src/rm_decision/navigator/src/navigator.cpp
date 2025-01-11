@@ -65,11 +65,11 @@ void Navigator::result_callback(
     }
 }
 
-void Navigator::nav_callback(const rm_decision_interfaces::msg::Navigate& msg) {
-    if (msg.instant) {
+void Navigator::nav_callback(const rm_decision_interfaces::msg::Navigate::SharedPtr msg) {
+    if (msg->instant) {
         nav_cancel();
     }
-    nav_to_pose(msg.pose);
+    nav_to_pose(msg->pose);
 }
 
 void Navigator::nav_to_pose(const geometry_msgs::msg::PoseStamped& msg) {

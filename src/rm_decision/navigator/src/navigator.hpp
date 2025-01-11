@@ -29,7 +29,7 @@ private:
     int failed_count_;
     bool available_;
 
-    void nav_callback(const rm_decision_interfaces::msg::Navigate& msg);
+    void nav_callback(const rm_decision_interfaces::msg::Navigate::SharedPtr msg);
 
     void goal_response_callback(
         rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future);
