@@ -65,9 +65,14 @@ private:
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
 
     // chessboard发布者
-    rclcpp::Publisher<chessboard_interfaces::msg::Chessboard>::SharedPtr chessboard_pub;
+    rclcpp::Publisher<chessboard_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
 
     // prism发布者
+    rclcpp::Publisher<rm_decision_interfaces::msg::Prism>::SharedPtr prism_pub_;
+
+    rclcpp::TimerBase::SharedPtr timer_;
+
+    void timer_callback();
 
     void all_robot_hp_callback(const rm_decision_interfaces::msg::AllRobotHP::SharedPtr msg);
 
