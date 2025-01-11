@@ -3,9 +3,10 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include "rm_decision_defs.hpp"
 #include "rm_decision_interfaces/msg/navigate.hpp"
 
+
+namespace RMDecision{
 enum NavState {
     INIT,
     REACHED,
@@ -16,7 +17,7 @@ enum NavState {
 
 class Navigator : public rclcpp::Node {
 public:
-    explicit Navigator();
+    explicit Navigator(const rclcpp::NodeOptions &options);
 
 private:
     rclcpp::Subscription<rm_decision_interfaces::msg::Navigate>::SharedPtr nav_msg_sub_;
@@ -45,3 +46,4 @@ private:
 
     void nav_cancel();
 };
+} // namespace RMDecision
