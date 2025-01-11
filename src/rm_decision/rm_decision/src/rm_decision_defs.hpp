@@ -277,7 +277,7 @@ std::unordered_map<std::string, std::vector<double>> architecture = {
     {"Red_Base", {}},
     {"Blue_Outpost", {}},
     {"Blue_Base", {}},
-};  // namespace DefaultInfo
+};
 
 }  // namespace DefaultInfo
 

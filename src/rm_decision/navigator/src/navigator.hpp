@@ -16,17 +16,21 @@ enum NavState {
 
 class Navigator : public rclcpp::Node {
 public:
-    void nav(const rm_decision_interfaces::msg::navigate& msg);
+    explicit Navigator();
+    void nav(const rm_decision_interfaces::msg::Navigate& msg);
 
 private:
-    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client;
-    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions send_goal_options;
+    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client_;
+    rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions send_goal_options_;
+    std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future_;
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_;
+    std::chrono::steady_clock::time_point endtime_;
     NavState nav_state_;
     int failed_count_;
     bool available_;
 
-    goal_response_callback(rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future);
+    void goal_response_callback(
+        rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future);
 
     void feedback_callback(
         rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future,

@@ -6,7 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <type_traits>
 
-#include "rm_decision_interfaces/msg/navigate.hpp"
+#include "rm_msg_includes.hpp"
 #include "chessboard_handle.hpp"
 #include "prism.hpp"
 
