@@ -17,17 +17,19 @@ enum NavState {
 class Navigator : public rclcpp::Node {
 public:
     explicit Navigator();
-    void nav(const rm_decision_interfaces::msg::Navigate& msg);
 
 private:
+    rclcpp::Subscription<rm_decision_interfaces::msg::Navigate>::SharedPtr nav_msg_sub_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions send_goal_options_;
-    std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future_;
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_;
+     std::shared_future<rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr> send_goal_future_;
     std::chrono::steady_clock::time_point endtime_;
     NavState nav_state_;
     int failed_count_;
     bool available_;
+
+    void nav_callback(const rm_decision_interfaces::msg::Navigate& msg);
 
     void goal_response_callback(
         rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future);

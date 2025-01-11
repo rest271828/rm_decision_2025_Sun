@@ -1,6 +1,8 @@
 #include "navigator.hpp"
 
 Navigator::Navigator() : Node("navigator"){
+    nav_msg_sub_ = this->create_subscription<rm_decision_interfaces::msg::Navigate>(
+        "to_navigator", 10, std::bind(&Navigator::nav_callback, this, std::placeholders::_1));
     nav_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     send_goal_options_.goal_response_callback = std::bind(&Navigator::goal_response_callback, this,
                                                          std::placeholders::_1);
@@ -63,7 +65,7 @@ void Navigator::result_callback(
     }
 }
 
-void Navigator::nav(const rm_decision_interfaces::msg::Navigate& msg) {
+void Navigator::nav_callback(const rm_decision_interfaces::msg::Navigate& msg) {
     if (msg.instant) {
         nav_cancel();
     }
