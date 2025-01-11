@@ -157,6 +157,8 @@ class Area : public Object {
 public:
     std::vector<PlaneCoordinate> vertices;
 
+    Area() {}
+
     Area(const chessboard_interfaces::msg::Area& msg) : Object(msg.label) {
         for(const auto& planeCoordinateMsg : msg.vertices) {
             vertices.push_back(PlaneCoordinate(planeCoordinateMsg));
@@ -191,6 +193,8 @@ public:
 
 class Terrain : public Area {
 public:
+    Terrain() {}
+
     Terrain(const chessboard_interfaces::msg::Terrain& msg) : Area(msg.label, msg.vertices) {}
 
     static void array_to_terrain(const std::vector<double>& doubleArray, Terrain& terrain) {
@@ -212,6 +216,8 @@ class Architecture : public Area {
 public:
     uint hp;
     Faction faction;
+
+    Architecture(){}
 
     Architecture(const chessboard_interfaces::msg::Architecture& msg) : Area(msg.label, msg.vertices), hp(msg.hp){
         faction = static_cast<RMDecision::Faction>(msg.faction);

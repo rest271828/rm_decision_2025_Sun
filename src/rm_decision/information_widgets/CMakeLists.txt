@@ -1,46 +1,38 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(information_widgets)
 
-# 查找依赖包
-find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(rm_decision_interfaces REQUIRED)
-find_package(auto_aim_interfaces REQUIRED)
-find_package(chessboard_interfaces REQUIRED)
-find_package(nav2_msgs REQUIRED)
-find_package(rclcpp_action REQUIRED)
+## Use C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories( 
-  include 
-  ${CMAKE_CURRENT_SOURCE_DIR}/include 
-)
+## By adding -Wall and -Werror, the compiler does not ignore warnings anymore,
+## enforcing cleaner code.
+add_definitions(-Wall -Werror)
 
-add_library(information_widgets
+## Export compile commands for clangd
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+find_package(ament_cmake_auto REQUIRED)
+
+ament_auto_find_build_dependencies()
+
+set(SRC_LIST
   src/chessboard_handle.cpp
-  src/prism_handle.cpp
+  src/chessboard_handle.cpp
 )
 
-ament_target_dependencies(information_widgets
-  rclcpp
-  std_msgs
-  geometry_msgs
-  rm_decision_interfaces
-  auto_aim_interfaces
-  chessboard_interfaces
-  nav2_msgs
-  rclcpp_action
+set(HEAD_LIST
+  include/information_widgets/chessboard_handle.hpp
+  include/information_widgets/prism_handle.hpp
+  include/information_widgets/rm_decision_defs.hpp
+  include/information_widgets/rm_msg_includes.hpp
 )
 
-install(DIRECTORY include/information_widgets/
-  DESTINATION include/information_widgets
+# 库名不能和可执行文件重名
+# 要先生成库才能被别的功能包链接和使用头文件
+ament_auto_add_library(los_controller_lib SHARED
+  ${SRC_LIST}
+  ${HEAD_LIST}
 )
 
-install(TARGETS information_widgets
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-
-ament_package()
+ament_auto_package()

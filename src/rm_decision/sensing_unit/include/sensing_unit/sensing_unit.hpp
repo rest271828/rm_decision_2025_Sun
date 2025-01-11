@@ -6,15 +6,15 @@
 #include <rclcpp/rclcpp.hpp>
 #include <type_traits>
 
-#include "rm_msg_includes.hpp"
-#include "chessboard_handle.hpp"
-#include "prism_handle.hpp"
+#include "information_widgets/rm_msg_includes.hpp"
+#include "information_widgets/chessboard_handle.hpp"
+#include "information_widgets/prism_handle.hpp"
 
 namespace RMDecision {
 
 class SensingUnit : public rclcpp::Node {
 public:
-    explicit SensingUnit(const rclcpp::NodeOptions& options, const Faction& faction);
+    SensingUnit(const rclcpp::NodeOptions& options);
 
 private:
     ChessboardHandle chessboard_;
@@ -29,12 +29,10 @@ private:
 
             T1 tmpSrcData;
             T2 tmpDistData;
-            tmpData = this->get_parameter<T1>(label);
+            this->get_parameter<T1>(label, tmpSrcData);
 
             if (conversion != nullptr) {
                 conversion(tmpSrcData, tmpDistData);
-            } else {
-                tmpDistData = static_cast<T2> tmpSrcData;
             }
 
             dist[label] = std::make_shared<T2>(tmpDistData);
@@ -44,11 +42,8 @@ private:
     template <typename T>
     void name_objects(std::unordered_map<std::string, std::shared_ptr<T>>& map) {
         static_assert(std::is_base_of<Object, T>::value, "T must be a descendant of Object.");
-
-        for (auto& elem : *chessboard.terrains) {
-            const std::string& label = elem.first;
-            std::shared_ptr<T> currentObject = elem.second;
-            currentObject->label = elem.first;
+        for (auto& elem : map) {
+            elem.second->label = elem.first;
         }
     }
 

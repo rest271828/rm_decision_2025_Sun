@@ -1,11 +1,12 @@
-#include "sensing_unit.hpp"
+#include "sensing_unit/sensing_unit.hpp"
 
 using namespace RMDecision;
 
 void SensingUnit::init_chessboard(const Faction& faction) {
     chessboard_.faction = faction;
-    init_map_declare<Robot, Robot>(
-        RMDecision::DefaultInfo::robots, *chessboard_.robots);
+    for (const auto& elem : DefaultInfo::robots) {
+        (*chessboard_.robots)[elem.first] = std::make_shared<Robot>(elem.second);
+    }
     init_map_declare<std::vector<double>, Terrain>(
         RMDecision::DefaultInfo::terrains, *chessboard_.terrains, Terrain::array_to_terrain);
     init_map_declare<std::vector<double>, Architecture>(
@@ -14,10 +15,30 @@ void SensingUnit::init_chessboard(const Faction& faction) {
     name_objects<Robot>(*chessboard_.robots);
     name_objects<Terrain>(*chessboard_.terrains);
     name_objects<Architecture>(*chessboard_.architectures);
-    chessboard_.initialed = true;
+    if (chessboard_.faction != UNKNOWN) {
+        chessboard_.initialed = true;
+    }
 }
 
-SensingUnit::SensingUnit(const rclcpp::NodeOptions& options, const Faction& faction) : Node("observe_unit", options), chessboard_(faction) {
+SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_unit", options), chessboard_(UNKNOWN) {
+    std::string faction_str;
+    this->declare_parameter<std::string>("faction");
+
+    if (!this->get_parameter("faction", faction_str)) {
+        RCLCPP_FATAL(this->get_logger(), "Faction is not defined. SensingUnit will shut down.");
+        rclcpp::shutdown();
+        return;
+    }
+
+    Faction faction;
+    if (faction_str == "RED" || faction_str == "Red" || faction_str == "R" || faction_str == "red" || faction_str == "1") {
+        faction = RED;
+    } else if (faction_str == "BLUE" || faction_str == "Blue" || faction_str == "B" || faction_str == "blue" || faction_str == "2") {
+        faction = BLUE;
+    } else {
+        faction = UNKNOWN;
+    }
+
     init_chessboard(faction);
     all_robot_hp_sub_ = this->create_subscription<rm_decision_interfaces::msg::AllRobotHP>(
         "all_robot_hp", 10, std::bind(&SensingUnit::all_robot_hp_callback, this, std::placeholders::_1));
@@ -53,7 +74,12 @@ void SensingUnit::timer_callback() {
 }
 
 void SensingUnit::all_robot_hp_callback(const rm_decision_interfaces::msg::AllRobotHP::SharedPtr msg) {
-    assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
+    if (chessboard_.initialed) {
+        assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
+    } else {
+        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.initialed = true;
+    }
 
     auto& robots = *chessboard_.robots;
     robots["R1"]->hp = msg->red_1_robot_hp;
@@ -93,7 +119,12 @@ void SensingUnit::friend_location_callback(const rm_decision_interfaces::msg::Fr
 }
 
 void SensingUnit::from_serial_callback(const rm_decision_interfaces::msg::FromSerial::SharedPtr msg) {
-    assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
+    if (chessboard_.initialed) {
+        assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
+    } else {
+        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.initialed = true;
+    }
 
     uint self_hp, self_base, self_outpost, enemy_outpost_hp;
 
@@ -134,3 +165,6 @@ void SensingUnit::target_callback(const auto_aim_interfaces::msg::Target::Shared
     prism_.track.id = msg->armors_num;
     prism_.track.tracking = msg->tracking;
 }
+
+#include "rclcpp_components/register_node_macro.hpp"
+RCLCPP_COMPONENTS_REGISTER_NODE(RMDecision::SensingUnit)
