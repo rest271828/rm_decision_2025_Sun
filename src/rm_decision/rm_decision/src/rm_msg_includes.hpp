@@ -12,3 +12,4 @@
 #include "rm_decision_interfaces/msg/robot_status.hpp"
 #include "rm_decision_interfaces/msg/to_auto_aim.hpp"
 #include "rm_decision_interfaces/msg/navigate.hpp"
+#include "rm_decision_interfaces/msg/prism.hpp"
