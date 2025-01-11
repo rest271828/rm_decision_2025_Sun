@@ -8,7 +8,6 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rm_decision_defs.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "chessboard_interfaces/msg/chessboard.hpp"
 
 namespace RMDecision {

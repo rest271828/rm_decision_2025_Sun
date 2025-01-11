@@ -1,4 +1,4 @@
-#include "prism_handle.hpp"
+#include "information_widgets/prism_handle.hpp"
 
 RMDecision::Prism::Prism(const rm_decision_interfaces::msg::Prism& msg) {
     upgrade_from_message(msg);

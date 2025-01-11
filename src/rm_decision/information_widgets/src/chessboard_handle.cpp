@@ -1,4 +1,4 @@
-#include "chessboard_handle.hpp"
+#include "information_widgets/chessboard_handle.hpp"
 
 using namespace RMDecision;
 
