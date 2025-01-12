@@ -166,5 +166,46 @@ void SensingUnit::target_callback(const auto_aim_interfaces::msg::Target::Shared
     prism_.track.tracking = msg->tracking;
 }
 
+void SensingUnit::receive_serial_callback(const rm_decision_interfaces::msg::ReceiveSerial::SharedPtr msg) {
+    if (chessboard_.initialed) {
+        assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
+    } else {
+        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.initialed = true;
+    }
+
+    auto& robots = *chessboard_.robots;
+    robots["R1"]->hp = msg->red_1;
+    robots["R2"]->hp = msg->red_2;
+    robots["R3"]->hp = msg->red_3;
+    robots["R4"]->hp = msg->red_4;
+    robots["R5"]->hp = msg->red_5;
+    robots["R7"]->hp = msg->red_7;
+
+    robots["B1"]->hp = msg->blue_1;
+    robots["B2"]->hp = msg->blue_2;
+    robots["B3"]->hp = msg->blue_3;
+    robots["B4"]->hp = msg->blue_4;
+    robots["B5"]->hp = msg->blue_5;
+    robots["B7"]->hp = msg->blue_7;
+
+    auto& architectures = *chessboard_.architectures;
+    architectures["Red_Outpost"]->hp = msg->red_outpost_hp;
+    architectures["Red_Base"]->hp = msg->red_base_hp;
+    architectures["Blue_Outpost"]->hp = msg->blue_outpost_hp;
+    architectures["Blue_Base"]->hp = msg->blue_base_hp;
+
+    prism_.self.hp = msg->self_hp;
+    prism_.track.hp = chessboard_.enemy_robot(prism_.track.id)->hp;
+}
+
+void SensingUnit::robot_status_callback(const rm_decision_interfaces::msg::RobotStatus::SharedPtr msg) {
+    if(prism_.self.id == msg->robot_id) {
+        prism_.self.hp = msg->current_hp;
+        prism_.self.ammo = msg->ammo_buy;
+        prism_.self.shooter_heat = msg->shooter_heat;
+    }
+}
+
 #include "rclcpp_components/register_node_macro.hpp"
 RCLCPP_COMPONENTS_REGISTER_NODE(RMDecision::SensingUnit)
