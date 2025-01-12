@@ -4,6 +4,7 @@ using namespace RMDecision;
 
 ChessboardHandle::ChessboardHandle(const chessboard_interfaces::msg::Chessboard& msg) : initialed(msg.initialed) {
     faction = static_cast<RMDecision::Faction>(msg.faction);
+    timestamp = msg.timestamp;
     robots = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Robot>>>();
     terrains = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Terrain>>>();
     architectures = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Architecture>>>();
@@ -19,6 +20,7 @@ ChessboardHandle::ChessboardHandle(const chessboard_interfaces::msg::Chessboard&
     for(const auto& architectureMsg : msg.architectures) {
         (*architectures)[architectureMsg.label] = std::make_shared<Architecture>(architectureMsg);
     }
+    initialed = true;
 }
 
 inline std::shared_ptr<Robot> ChessboardHandle::friend_robot(const uint& id) {
@@ -71,6 +73,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
 
 void ChessboardHandle::upgrate_from_message(const chessboard_interfaces::msg::Chessboard& msg) {
     assert(initialed && "Chessboard uninitialized ERROR");
+    timestamp = msg.timestamp;
     for (const auto& robotMsg : msg.robots) {
         auto& robot = (*robots)[robotMsg.label];
         robot->upgrate_from_message(robotMsg);
@@ -86,6 +89,7 @@ chessboard_interfaces::msg::Chessboard ChessboardHandle::to_message() {
     auto msg = chessboard_interfaces::msg::Chessboard();
     msg.faction = faction;
     msg.initialed = initialed;
+    msg.timestamp = timestamp;
 
     for (const auto& elem : *robots) {
         Robot& robot = *elem.second;

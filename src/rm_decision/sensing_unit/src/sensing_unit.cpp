@@ -65,7 +65,7 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
 
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
     prism_pub_ = this->create_publisher<rm_decision_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10);
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(1), std::bind(&SensingUnit::timer_callback, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(20), std::bind(&SensingUnit::timer_callback, this));
 }
 
 void SensingUnit::timer_callback() {
@@ -102,6 +102,8 @@ void SensingUnit::all_robot_hp_callback(const rm_decision_interfaces::msg::AllRo
     architectures["Blue_Outpost"]->hp = msg->blue_outpost_hp;
     architectures["Blue_Base"]->hp = msg->blue_base_hp;
 
+    chessboard_.timestamp = this->now();
+
     prism_.self.hp = chessboard_.friend_robot(prism_.self.id)->hp;
     prism_.track.hp = chessboard_.enemy_robot(prism_.track.id)->hp;
 }
@@ -116,6 +118,8 @@ void SensingUnit::friend_location_callback(const rm_decision_interfaces::msg::Fr
     lambda(3, msg->standard_3_x, msg->standard_3_y);
     lambda(4, msg->standard_4_x, msg->standard_4_y);
     lambda(5, msg->standard_5_x, msg->standard_5_y);
+
+    chessboard_.timestamp = this->now();
 }
 
 void SensingUnit::from_serial_callback(const rm_decision_interfaces::msg::FromSerial::SharedPtr msg) {
@@ -151,6 +155,8 @@ void SensingUnit::from_serial_callback(const rm_decision_interfaces::msg::FromSe
     chessboard_.friend_base()->hp = self_base;
     chessboard_.friend_outpost()->hp = self_outpost;
     chessboard_.enemy_outpost()->hp = enemy_outpost_hp;
+
+    chessboard_.timestamp = this->now();
 }
 
 void SensingUnit::tracking_pose_callback(const geometry_msgs::msg::PointStamped::SharedPtr msg) {
@@ -194,6 +200,8 @@ void SensingUnit::receive_serial_callback(const rm_decision_interfaces::msg::Rec
     architectures["Red_Base"]->hp = msg->red_base_hp;
     architectures["Blue_Outpost"]->hp = msg->blue_outpost_hp;
     architectures["Blue_Base"]->hp = msg->blue_base_hp;
+
+    chessboard_.timestamp = this->now();
 
     prism_.self.hp = msg->self_hp;
     prism_.track.hp = chessboard_.enemy_robot(prism_.track.id)->hp;

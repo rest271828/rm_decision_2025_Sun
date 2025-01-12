@@ -19,6 +19,7 @@ public:
         terrains = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Terrain>>>();
         architectures = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Architecture>>>();
         initialed = false;
+        timestamp = rclcpp::Time(-1, 0, RCL_ROS_TIME);
     }
 
     ChessboardHandle(const chessboard_interfaces::msg::Chessboard& msg);
@@ -26,7 +27,8 @@ public:
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Robot>>> robots;
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Terrain>>> terrains;
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Architecture>>> architectures;
-    RMDecision::Faction faction;
+    Faction faction;
+    rclcpp::Time timestamp;
     bool initialed = false;
 
     inline std::shared_ptr<Robot> friend_robot(const uint& id);

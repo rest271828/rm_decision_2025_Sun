@@ -18,7 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Area.msg"
   "msg/Terrain.msg"
   "msg/Architecture.msg"
-  DEPENDENCIES geometry_msgs
+  DEPENDENCIES geometry_msgs builtin_interfaces
 )
 
 if(BUILD_TESTING)
