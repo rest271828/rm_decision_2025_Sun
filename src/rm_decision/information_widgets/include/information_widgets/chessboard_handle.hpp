@@ -6,9 +6,9 @@
 #include <vector>
 
 #include "geometry_msgs/msg/pose.hpp"
+#include "iw_interfaces/msg/chessboard.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rm_decision_defs.hpp"
-#include "chessboard_interfaces/msg/chessboard.hpp"
 
 namespace RMDecision {
 
@@ -22,7 +22,7 @@ public:
         timestamp = rclcpp::Time(-1, 0, RCL_ROS_TIME);
     }
 
-    ChessboardHandle(const chessboard_interfaces::msg::Chessboard& msg);
+    ChessboardHandle(const iw_interfaces::msg::Chessboard& msg);
     // 使用智能指针避免对象切割
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Robot>>> robots;
     std::shared_ptr<std::unordered_map<std::string, std::shared_ptr<Terrain>>> terrains;
@@ -43,9 +43,9 @@ public:
 
     inline std::shared_ptr<Architecture> enemy_base();
 
-    void upgrate_from_message(const chessboard_interfaces::msg::Chessboard& msg);
+    void upgrate_from_message(const iw_interfaces::msg::Chessboard& msg);
 
-    chessboard_interfaces::msg::Chessboard to_message();
+    iw_interfaces::msg::Chessboard to_message();
 };
 
 }  // namespace RMDecision

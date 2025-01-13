@@ -6,9 +6,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <type_traits>
 
-#include "information_widgets/rm_msg_includes.hpp"
 #include "information_widgets/chessboard_handle.hpp"
 #include "information_widgets/prism_handle.hpp"
+#include "information_widgets/rm_msg_includes.hpp"
 
 namespace RMDecision {
 
@@ -60,10 +60,10 @@ private:
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
 
     // chessboard发布者
-    rclcpp::Publisher<chessboard_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
+    rclcpp::Publisher<iw_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
 
     // prism发布者
-    rclcpp::Publisher<rm_decision_interfaces::msg::Prism>::SharedPtr prism_pub_;
+    rclcpp::Publisher<iw_interfaces::msg::Prism>::SharedPtr prism_pub_;
 
     rclcpp::TimerBase::SharedPtr timer_;
 

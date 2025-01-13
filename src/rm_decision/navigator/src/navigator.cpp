@@ -1,7 +1,7 @@
-#include "navigator.hpp"
+#include "navigator/navigator.hpp"
 
 RMDecision::Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
-    nav_msg_sub_ = this->create_subscription<rm_decision_interfaces::msg::Navigate>(
+    nav_msg_sub_ = this->create_subscription<navigator_interfaces::msg::Navigate>(
         "to_navigator", 10, std::bind(&Navigator::nav_callback, this, std::placeholders::_1));
     nav_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     send_goal_options_.goal_response_callback = std::bind(&Navigator::goal_response_callback, this,
@@ -66,7 +66,7 @@ void RMDecision::Navigator::result_callback(
     }
 }
 
-void RMDecision::Navigator::nav_callback(const rm_decision_interfaces::msg::Navigate::SharedPtr msg) {
+void RMDecision::Navigator::nav_callback(const navigator_interfaces::msg::Navigate::SharedPtr msg) {
     if (msg->instant) {
         nav_cancel();
     }

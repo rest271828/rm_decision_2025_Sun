@@ -1,10 +1,10 @@
 #include "information_widgets/prism_handle.hpp"
 
-RMDecision::Prism::Prism(const rm_decision_interfaces::msg::Prism& msg) {
+RMDecision::Prism::Prism(const iw_interfaces::msg::Prism& msg) {
     upgrade_from_message(msg);
 }
 
-void RMDecision::Prism::upgrade_from_message(const rm_decision_interfaces::msg::Prism& msg) {
+void RMDecision::Prism::upgrade_from_message(const iw_interfaces::msg::Prism& msg) {
     self.id = msg.self_id;
     self.hp = msg.self_hp;
     self.ammo = msg.self_ammo;
@@ -26,8 +26,8 @@ void RMDecision::Prism::upgrade_from_message(const rm_decision_interfaces::msg::
     call.is_called = msg.call_is_called;
 }
 
-rm_decision_interfaces::msg::Prism RMDecision::Prism::to_message() {
-    rm_decision_interfaces::msg::Prism msg;
+iw_interfaces::msg::Prism RMDecision::Prism::to_message() {
+    iw_interfaces::msg::Prism msg;
     msg.self_id = self.id;
     msg.self_hp = self.hp;
     msg.self_ammo = self.ammo;

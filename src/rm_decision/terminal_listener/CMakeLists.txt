@@ -5,7 +5,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(rm_decision_interfaces REQUIRED)
+find_package(navigator_interfaces REQUIRED)
 
 add_executable(${PROJECT_NAME} src/terminal_listener.cpp)
 
@@ -13,7 +13,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   std_msgs
   geometry_msgs
-  rm_decision_interfaces
+  navigator_interfaces
 )
 
 install(TARGETS

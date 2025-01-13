@@ -3,7 +3,7 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
-#include "rm_decision_interfaces/msg/navigate.hpp"
+#include "navigator_interfaces/msg/navigate.hpp"
 
 
 namespace RMDecision{
@@ -20,7 +20,7 @@ public:
     explicit Navigator(const rclcpp::NodeOptions &options);
 
 private:
-    rclcpp::Subscription<rm_decision_interfaces::msg::Navigate>::SharedPtr nav_msg_sub_;
+    rclcpp::Subscription<navigator_interfaces::msg::Navigate>::SharedPtr nav_msg_sub_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr nav_to_pose_client_;
     rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions send_goal_options_;
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr goal_handle_;
@@ -30,7 +30,7 @@ private:
     int failed_count_;
     bool available_;
 
-    void nav_callback(const rm_decision_interfaces::msg::Navigate::SharedPtr msg);
+    void nav_callback(const navigator_interfaces::msg::Navigate::SharedPtr msg);
 
     void goal_response_callback(
         rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future);

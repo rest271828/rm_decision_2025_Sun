@@ -28,8 +28,6 @@ set(HEAD_LIST
   include/information_widgets/rm_msg_includes.hpp
 )
 
-# 库名不能和可执行文件重名
-# 要先生成库才能被别的功能包链接和使用头文件
 ament_auto_add_library(los_controller_lib SHARED
   ${SRC_LIST}
   ${HEAD_LIST}

@@ -2,7 +2,7 @@
 
 using namespace RMDecision;
 
-ChessboardHandle::ChessboardHandle(const chessboard_interfaces::msg::Chessboard& msg) : initialed(msg.initialed) {
+ChessboardHandle::ChessboardHandle(const iw_interfaces::msg::Chessboard& msg) : initialed(msg.initialed) {
     faction = static_cast<RMDecision::Faction>(msg.faction);
     timestamp = msg.timestamp;
     robots = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Robot>>>();
@@ -17,7 +17,7 @@ ChessboardHandle::ChessboardHandle(const chessboard_interfaces::msg::Chessboard&
         (*terrains)[terrainMsg.label] = std::make_shared<Terrain>(terrainMsg);
     }
 
-    for(const auto& architectureMsg : msg.architectures) {
+    for (const auto& architectureMsg : msg.architectures) {
         (*architectures)[architectureMsg.label] = std::make_shared<Architecture>(architectureMsg);
     }
     initialed = true;
@@ -71,7 +71,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
     }
 }
 
-void ChessboardHandle::upgrate_from_message(const chessboard_interfaces::msg::Chessboard& msg) {
+void ChessboardHandle::upgrate_from_message(const iw_interfaces::msg::Chessboard& msg) {
     assert(initialed && "Chessboard uninitialized ERROR");
     timestamp = msg.timestamp;
     for (const auto& robotMsg : msg.robots) {
@@ -85,8 +85,8 @@ void ChessboardHandle::upgrate_from_message(const chessboard_interfaces::msg::Ch
     }
 }
 
-chessboard_interfaces::msg::Chessboard ChessboardHandle::to_message() {
-    auto msg = chessboard_interfaces::msg::Chessboard();
+iw_interfaces::msg::Chessboard ChessboardHandle::to_message() {
+    auto msg = iw_interfaces::msg::Chessboard();
     msg.faction = faction;
     msg.initialed = initialed;
     msg.timestamp = timestamp;

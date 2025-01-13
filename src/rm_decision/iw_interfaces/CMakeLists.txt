@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(chessboard_interfaces)
+project(iw_interfaces)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Area.msg"
   "msg/Terrain.msg"
   "msg/Architecture.msg"
+  "msg/Prism.msg"
   DEPENDENCIES geometry_msgs builtin_interfaces
 )
 

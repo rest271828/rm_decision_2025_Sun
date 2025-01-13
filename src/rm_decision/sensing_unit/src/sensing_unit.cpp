@@ -61,10 +61,10 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     target_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
         "/tracker/target", rclcpp::SensorDataQoS(), std::bind(&SensingUnit::target_callback, this, std::placeholders::_1));
 
-    chessboard_pub_ = this->create_publisher<chessboard_interfaces::msg::Chessboard>("rm_decision/chessboard", 10);
+    chessboard_pub_ = this->create_publisher<iw_interfaces::msg::Chessboard>("rm_decision/chessboard", 10);
 
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
-    prism_pub_ = this->create_publisher<rm_decision_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10);
+    prism_pub_ = this->create_publisher<iw_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10);
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20), std::bind(&SensingUnit::timer_callback, this));
 }
 
@@ -208,7 +208,7 @@ void SensingUnit::receive_serial_callback(const rm_decision_interfaces::msg::Rec
 }
 
 void SensingUnit::robot_status_callback(const rm_decision_interfaces::msg::RobotStatus::SharedPtr msg) {
-    if(prism_.self.id == msg->robot_id) {
+    if (prism_.self.id == msg->robot_id) {
         prism_.self.hp = msg->current_hp;
         prism_.self.ammo = msg->ammo_buy;
         prism_.self.shooter_heat = msg->shooter_heat;

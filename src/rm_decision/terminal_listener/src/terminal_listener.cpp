@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "rm_decision_interfaces/msg/navigate.hpp"
+#include "navigator_interfaces/msg/navigate.hpp"
 
 class TerminalListener : public rclcpp::Node {
 public:
     TerminalListener() : Node("terminal_listener") {
-        nav_pub_ = this->create_publisher<rm_decision_interfaces::msg::Navigate>("to_navigator", 10);
+        nav_pub_ = this->create_publisher<navigator_interfaces::msg::Navigate>("to_navigator", 10);
     }
 
     void set_input_param(const std::string& input) {
@@ -35,7 +35,7 @@ public:
             msg.pose.orientation.w = 1.0;
             RCLCPP_INFO(
                 this->get_logger(), "Publishing: position(%.3f, %.3f)", msg.pose.position.x, msg.pose.position.y);
-            rm_decision_interfaces::msg::Navigate nav_msg;
+            navigator_interfaces::msg::Navigate nav_msg;
             nav_msg.instant = true;
             nav_msg.pose = msg;
             nav_pub_->publish(nav_msg);
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    rclcpp::Publisher<rm_decision_interfaces::msg::Navigate>::SharedPtr nav_pub_;
+    rclcpp::Publisher<navigator_interfaces::msg::Navigate>::SharedPtr nav_pub_;
 };
 
 void read_input(rclcpp::Node::SharedPtr node) {

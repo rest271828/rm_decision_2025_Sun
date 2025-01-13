@@ -1,16 +1,16 @@
 #pragma once
 
+#include <cassert>
 #include <cmath>
 #include <string>
 #include <vector>
-#include <cassert>
 
-#include "chessboard_interfaces/msg/architecture.hpp"
-#include "chessboard_interfaces/msg/area.hpp"
-#include "chessboard_interfaces/msg/plane_coordinate.hpp"
-#include "chessboard_interfaces/msg/robot.hpp"
-#include "chessboard_interfaces/msg/terrain.hpp"
 #include "geometry_msgs/msg/pose.hpp"
+#include "iw_interfaces/msg/architecture.hpp"
+#include "iw_interfaces/msg/area.hpp"
+#include "iw_interfaces/msg/plane_coordinate.hpp"
+#include "iw_interfaces/msg/robot.hpp"
+#include "iw_interfaces/msg/terrain.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace RMDecision {
@@ -30,7 +30,7 @@ public:
 
     PlaneCoordinate(const PoseStamped& pose) : x(pose.pose.position.x), y(pose.pose.position.y) {}
 
-    PlaneCoordinate(const chessboard_interfaces::msg::PlaneCoordinate msg) : x(msg.x), y(msg.y) {}
+    PlaneCoordinate(const iw_interfaces::msg::PlaneCoordinate msg) : x(msg.x), y(msg.y) {}
 
     inline PlaneCoordinate operator+(const PlaneCoordinate& another) const {
         return PlaneCoordinate(x + another.x, y + another.y);
@@ -95,8 +95,8 @@ public:
         return res;
     }
 
-    chessboard_interfaces::msg::PlaneCoordinate to_message() const {
-        auto msg = chessboard_interfaces::msg::PlaneCoordinate();
+    iw_interfaces::msg::PlaneCoordinate to_message() const {
+        auto msg = iw_interfaces::msg::PlaneCoordinate();
         msg.x = x;
         msg.y = y;
         return msg;
@@ -126,13 +126,13 @@ public:
 
     Robot(std::string label, Faction faction, int id, geometry_msgs::msg::PoseStamped pose, uint hp, uint level) : Object(label), faction(faction), id(id), pose(pose), hp(hp), level(level) {}
 
-    Robot(const chessboard_interfaces::msg::Robot& msg)
+    Robot(const iw_interfaces::msg::Robot& msg)
         : Object(msg.label), id(msg.id), pose(msg.pose), hp(msg.hp), level(msg.level), attack(msg.attack), missing(msg.missing) {
         faction = static_cast<RMDecision::Faction>(msg.faction);
     }
 
-    chessboard_interfaces::msg::Robot to_message() const {
-        auto msg = chessboard_interfaces::msg::Robot();
+    iw_interfaces::msg::Robot to_message() const {
+        auto msg = iw_interfaces::msg::Robot();
         msg.attack = attack;
         msg.faction = faction;
         msg.hp = hp;
@@ -144,7 +144,7 @@ public:
         return msg;
     }
 
-    void upgrate_from_message(const chessboard_interfaces::msg::Robot& msg) {
+    void upgrate_from_message(const iw_interfaces::msg::Robot& msg) {
         hp = msg.hp;
         level = msg.level;
         pose = msg.pose;
@@ -159,14 +159,14 @@ public:
 
     Area() {}
 
-    Area(const chessboard_interfaces::msg::Area& msg) : Object(msg.label) {
-        for(const auto& planeCoordinateMsg : msg.vertices) {
+    Area(const iw_interfaces::msg::Area& msg) : Object(msg.label) {
+        for (const auto& planeCoordinateMsg : msg.vertices) {
             vertices.push_back(PlaneCoordinate(planeCoordinateMsg));
         }
     }
 
-    Area(const std::string& label_, const std::vector<chessboard_interfaces::msg::PlaneCoordinate>& msgVertices) : Object(label_) {
-        for(const auto& planeCoordinateMsg : msgVertices) {
+    Area(const std::string& label_, const std::vector<iw_interfaces::msg::PlaneCoordinate>& msgVertices) : Object(label_) {
+        for (const auto& planeCoordinateMsg : msgVertices) {
             vertices.push_back(PlaneCoordinate(planeCoordinateMsg));
         }
     }
@@ -180,8 +180,8 @@ public:
         }
     }
 
-    chessboard_interfaces::msg::Area to_message() const {
-        auto msg = chessboard_interfaces::msg::Area();
+    iw_interfaces::msg::Area to_message() const {
+        auto msg = iw_interfaces::msg::Area();
         for (const auto& vertex : vertices) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
@@ -195,14 +195,14 @@ class Terrain : public Area {
 public:
     Terrain() {}
 
-    Terrain(const chessboard_interfaces::msg::Terrain& msg) : Area(msg.label, msg.vertices) {}
+    Terrain(const iw_interfaces::msg::Terrain& msg) : Area(msg.label, msg.vertices) {}
 
     static void array_to_terrain(const std::vector<double>& doubleArray, Terrain& terrain) {
         array_to_area(doubleArray, terrain);
     }
 
-    chessboard_interfaces::msg::Terrain to_message() const {
-        auto msg = chessboard_interfaces::msg::Terrain();
+    iw_interfaces::msg::Terrain to_message() const {
+        auto msg = iw_interfaces::msg::Terrain();
         for (const auto& vertex : vertices) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
@@ -217,9 +217,9 @@ public:
     uint hp;
     Faction faction;
 
-    Architecture(){}
+    Architecture() {}
 
-    Architecture(const chessboard_interfaces::msg::Architecture& msg) : Area(msg.label, msg.vertices), hp(msg.hp){
+    Architecture(const iw_interfaces::msg::Architecture& msg) : Area(msg.label, msg.vertices), hp(msg.hp) {
         faction = static_cast<RMDecision::Faction>(msg.faction);
     }
 
@@ -227,8 +227,8 @@ public:
         array_to_architecture(doubleArray, architecture);
     }
 
-    chessboard_interfaces::msg::Architecture to_message() const {
-        auto msg = chessboard_interfaces::msg::Architecture();
+    iw_interfaces::msg::Architecture to_message() const {
+        auto msg = iw_interfaces::msg::Architecture();
         for (const auto& vertex : vertices) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
@@ -239,7 +239,7 @@ public:
         return msg;
     }
 
-    void upgrate_from_message(const chessboard_interfaces::msg::Architecture msg) {
+    void upgrate_from_message(const iw_interfaces::msg::Architecture msg) {
         hp = msg.hp;
     }
 };
