@@ -6,8 +6,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <type_traits>
 
-#include "information_widgets/chessboard_handle.hpp"
-#include "information_widgets/prism_handle.hpp"
+#include "information_widgets/chessboard_def.hpp"
+#include "information_widgets/prism_def.hpp"
 #include "information_widgets/rm_msg_includes.hpp"
 
 namespace RMDecision {

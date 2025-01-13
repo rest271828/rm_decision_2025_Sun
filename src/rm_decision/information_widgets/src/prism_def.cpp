@@ -1,10 +1,10 @@
-#include "information_widgets/prism_handle.hpp"
+#include "information_widgets/prism_def.hpp"
 
 RMDecision::Prism::Prism(const iw_interfaces::msg::Prism& msg) {
-    upgrade_from_message(msg);
+    update_from_message(msg);
 }
 
-void RMDecision::Prism::upgrade_from_message(const iw_interfaces::msg::Prism& msg) {
+void RMDecision::Prism::update_from_message(const iw_interfaces::msg::Prism& msg) {
     self.id = msg.self_id;
     self.hp = msg.self_hp;
     self.ammo = msg.self_ammo;

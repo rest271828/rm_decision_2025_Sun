@@ -8,9 +8,9 @@
 
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "iw_interfaces/msg/prism.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "rclcpp_action/client_goal_handle.hpp"
-#include "iw_interfaces/msg/prism.hpp"
 #include "rm_decision_defs.hpp"
 
 namespace RMDecision {
@@ -47,7 +47,7 @@ public:
 
 class Prism {
 public:
-    Prism(){}
+    Prism() {}
     Prism(const iw_interfaces::msg::Prism& msg);
 
     std::unordered_map<std::string, double> parameters;
@@ -56,7 +56,7 @@ public:
     Game game;
     Call call;
 
-    void upgrade_from_message(const iw_interfaces::msg::Prism& msg);
+    void update_from_message(const iw_interfaces::msg::Prism& msg);
 
     iw_interfaces::msg::Prism to_message();
 };

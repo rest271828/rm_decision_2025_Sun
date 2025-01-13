@@ -17,13 +17,13 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 set(SRC_LIST
-  src/chessboard_handle.cpp
-  src/chessboard_handle.cpp
+  src/chessboard_def.cpp
+  src/chessboard_def.cpp
 )
 
 set(HEAD_LIST
-  include/information_widgets/chessboard_handle.hpp
-  include/information_widgets/prism_handle.hpp
+  include/information_widgets/chessboard_def.hpp
+  include/information_widgets/prism_def.hpp
   include/information_widgets/rm_decision_defs.hpp
   include/information_widgets/rm_msg_includes.hpp
 )

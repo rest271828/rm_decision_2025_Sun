@@ -54,7 +54,7 @@ void read_input(rclcpp::Node::SharedPtr node) {
     while (rclcpp::ok()) {
         std::getline(std::cin, input);
         if (input == "quit") {
-            RCLCPP_INFO(terminal_listener->get_logger(), "Parameter listening stopped, enter < Ctrl+C > to shutdown.");
+            RCLCPP_INFO(terminal_listener->get_logger(), "Parameter listening stopped, enter [ Ctrl + C ] to shutdown.");
             break;
         }
         if (!input.empty() && terminal_listener) {
