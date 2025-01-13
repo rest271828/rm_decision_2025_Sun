@@ -8,7 +8,7 @@
 
 #include "information_widgets/chessboard_def.hpp"
 #include "information_widgets/prism_def.hpp"
-#include "information_widgets/rm_msg_includes.hpp"
+#include "rm_msg_includes.hpp"
 
 namespace RMDecision {
 

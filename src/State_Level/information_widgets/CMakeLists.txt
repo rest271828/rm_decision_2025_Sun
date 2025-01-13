@@ -25,7 +25,6 @@ set(HEAD_LIST
   include/information_widgets/chessboard_def.hpp
   include/information_widgets/prism_def.hpp
   include/information_widgets/rm_decision_defs.hpp
-  include/information_widgets/rm_msg_includes.hpp
 )
 
 ament_auto_add_library(los_controller_lib SHARED
