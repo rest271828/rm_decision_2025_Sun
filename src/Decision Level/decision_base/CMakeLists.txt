@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(information_widgets)
+project(decision_base)
 
 ## Use C++17
 set(CMAKE_CXX_STANDARD 17)
