@@ -12,7 +12,6 @@
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>nav2_msgs</depend>
   <depend>rm_decision_interfaces</depend>
   <depend>auto_aim_interfaces</depend>
   <depend>iw_interfaces</depend>

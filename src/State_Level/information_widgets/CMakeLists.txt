@@ -27,7 +27,7 @@ set(HEAD_LIST
   include/information_widgets/rm_decision_defs.hpp
 )
 
-ament_auto_add_library(los_controller_lib SHARED
+ament_auto_add_library(information_widgets_lib SHARED
   ${SRC_LIST}
   ${HEAD_LIST}
 )

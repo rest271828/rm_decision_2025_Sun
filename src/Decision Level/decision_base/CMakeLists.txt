@@ -24,7 +24,7 @@ set(HEAD_LIST
   include/decision_base/decision_base.hpp
 )
 
-ament_auto_add_library(los_controller_lib SHARED
+ament_auto_add_library(decision_base_lib SHARED
   ${SRC_LIST}
   ${HEAD_LIST}
 )
