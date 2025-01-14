@@ -46,16 +46,15 @@ private:
     }
 
     void init_chessboard(const Faction& faction);
-    // chessboard需要的消息订阅
+    // 消息订阅
     rclcpp::Subscription<rm_decision_interfaces::msg::AllRobotHP>::SharedPtr all_robot_hp_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::FriendLocation>::SharedPtr friend_location_sub_;
-
-    // prism需要的消息订阅
     rclcpp::Subscription<geometry_msgs::msg::PointStamped>::SharedPtr tracking_pose_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::FromSerial>::SharedPtr from_serial_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr receive_serial_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::RobotStatus>::SharedPtr robot_status_sub_;
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
 
     // chessboard发布者
     rclcpp::Publisher<iw_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
@@ -81,6 +80,6 @@ private:
 
     void target_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
 
-    void SensingUnit::get_current_pose();
+    void current_pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 };
 }  // namespace RMDecision

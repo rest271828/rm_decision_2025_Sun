@@ -43,6 +43,9 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     target_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
         "/tracker/target", rclcpp::SensorDataQoS(), std::bind(&SensingUnit::target_callback, this, std::placeholders::_1));
 
+    current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
+        "/navigator/current_pose", 10, std::bind(&SensingUnit::current_pose_callback, this, std::placeholders::_1));
+
     chessboard_pub_ = this->create_publisher<iw_interfaces::msg::Chessboard>("rm_decision/chessboard", 10);
 
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
@@ -69,7 +72,6 @@ void SensingUnit::init_chessboard(const Faction& faction) {
 }
 
 void SensingUnit::timer_callback() {
-    get_current_pose();
     chessboard_pub_->publish(chessboard_.to_message());
     prism_pub_->publish(prism_.to_message());
 }
@@ -214,6 +216,12 @@ void SensingUnit::robot_status_callback(const rm_decision_interfaces::msg::Robot
         prism_.self.ammo = msg->ammo_buy;
         prism_.self.shooter_heat = msg->shooter_heat;
     }
+}
+
+void SensingUnit::current_pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
+    prism_.self.pose = *msg;
+    chessboard_.friend_robot(prism_.self.id)->pose = *msg;
+    chessboard_.timestamp = this->now();
 }
 
 #include "rclcpp_components/register_node_macro.hpp"

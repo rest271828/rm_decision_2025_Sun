@@ -3,7 +3,7 @@
 RMDecision::Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
     nav_msg_sub_ = this->create_subscription<navigator_interfaces::msg::Navigate>(
         "to_navigator", 10, std::bind(&Navigator::nav_callback, this, std::placeholders::_1));
-    current_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("navigator/current_pose", 10);
+    current_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/navigator/current_pose", 10);
 
     nav_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     send_goal_options_.goal_response_callback = std::bind(&Navigator::goal_response_callback, this,
