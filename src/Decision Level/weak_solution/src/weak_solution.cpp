@@ -6,6 +6,10 @@ WeakSolution::WeakSolution(const rclcpp::NodeOptions& options) : DecisionBase(7,
 
 }
 
+WeakSolution::~WeakSolution() {
+    
+}
+
 PlaneCoordinate WeakSolution::generate_random_point(double radius) {
     std::random_device rd;
     std::mt19937 gen(rd());

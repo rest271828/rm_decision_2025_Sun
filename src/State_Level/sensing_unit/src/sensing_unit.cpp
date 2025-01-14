@@ -43,9 +43,6 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     target_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
         "/tracker/target", rclcpp::SensorDataQoS(), std::bind(&SensingUnit::target_callback, this, std::placeholders::_1));
 
-    tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-    tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);    
-
     chessboard_pub_ = this->create_publisher<iw_interfaces::msg::Chessboard>("rm_decision/chessboard", 10);
 
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
@@ -217,31 +214,6 @@ void SensingUnit::robot_status_callback(const rm_decision_interfaces::msg::Robot
         prism_.self.ammo = msg->ammo_buy;
         prism_.self.shooter_heat = msg->shooter_heat;
     }
-}
-
-void SensingUnit::get_current_pose() {
-    geometry_msgs::msg::TransformStamped odom_msg;
-    try {
-        odom_msg = tf2_buffer_->lookupTransform(
-                "map", "livox_frame",
-                tf2::TimePointZero);
-    } catch (const tf2::TransformException &ex) {
-        RCLCPP_INFO(
-                this->get_logger(), "Could not transform : %s",
-                ex.what());
-        return;
-    }
-    PoseStamped currentPose;
-    currentPose.header.stamp = this->now();
-    currentPose.header.frame_id = "map";
-    currentPose.pose.position.x = odom_msg.transform.translation.x;
-    currentPose.pose.position.y = odom_msg.transform.translation.y;
-    currentPose.pose.position.z = odom_msg.transform.translation.z;
-    currentPose.pose.orientation = odom_msg.transform.rotation;
-
-    prism_.self.pose = currentPose;
-    chessboard_.friend_robot(prism_.self.id)->pose = currentPose;
-    chessboard_.timestamp = this->now();
 }
 
 #include "rclcpp_components/register_node_macro.hpp"

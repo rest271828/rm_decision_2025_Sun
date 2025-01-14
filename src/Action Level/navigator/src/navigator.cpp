@@ -3,12 +3,19 @@
 RMDecision::Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
     nav_msg_sub_ = this->create_subscription<navigator_interfaces::msg::Navigate>(
         "to_navigator", 10, std::bind(&Navigator::nav_callback, this, std::placeholders::_1));
+    current_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("navigator/current_pose", 10);
+
     nav_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose");
     send_goal_options_.goal_response_callback = std::bind(&Navigator::goal_response_callback, this,
                                                          std::placeholders::_1);
     send_goal_options_.feedback_callback = std::bind(&Navigator::feedback_callback, this, std::placeholders::_1,
                                                     std::placeholders::_2);
     send_goal_options_.result_callback = std::bind(&Navigator::result_callback, this, std::placeholders::_1);
+
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(200), std::bind(&Navigator::timer_callback, this));
+
+    tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+    tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);    
 
     endtime_ = std::chrono::steady_clock::now();
     nav_state_ = INIT;
@@ -73,6 +80,10 @@ void RMDecision::Navigator::nav_callback(const navigator_interfaces::msg::Naviga
     nav_to_pose(msg->pose);
 }
 
+void RMDecision::Navigator::timer_callback() {
+    get_current_pose();
+}
+
 void RMDecision::Navigator::nav_to_pose(const geometry_msgs::msg::PoseStamped& msg) {
     nav_to_pose_client_->wait_for_action_server();
     auto goal_msg = nav2_msgs::action::NavigateToPose::Goal();
@@ -87,6 +98,29 @@ void RMDecision::Navigator::nav_cancel() {
         nav_to_pose_client_->async_cancel_goal(goal_handle_);
         RCLCPP_INFO(this->get_logger(), "Goal cancel request sent");
     }
+}
+
+void RMDecision::Navigator::get_current_pose() {
+    geometry_msgs::msg::TransformStamped odom_msg;
+    try {
+        odom_msg = tf2_buffer_->lookupTransform(
+                "map", "livox_frame",
+                tf2::TimePointZero);
+    } catch (const tf2::TransformException &ex) {
+        RCLCPP_INFO(
+                this->get_logger(), "Could not transform : %s",
+                ex.what());
+        return;
+    }
+    RMDecision::PoseStamped currentPose;
+    currentPose.header.stamp = this->now();
+    currentPose.header.frame_id = "map";
+    currentPose.pose.position.x = odom_msg.transform.translation.x;
+    currentPose.pose.position.y = odom_msg.transform.translation.y;
+    currentPose.pose.position.z = odom_msg.transform.translation.z;
+    currentPose.pose.orientation = odom_msg.transform.rotation;
+
+    current_pose_pub_->publish(currentPose);
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
