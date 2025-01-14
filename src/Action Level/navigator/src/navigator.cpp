@@ -33,7 +33,7 @@ void Navigator::goal_response_callback(
     } else {
         RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
     }
-    goal_handle_ = goal_handle;
+    // goal_handle_ = goal_handle;
 }
 
 void Navigator::feedback_callback(
