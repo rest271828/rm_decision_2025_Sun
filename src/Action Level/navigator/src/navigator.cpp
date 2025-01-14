@@ -25,7 +25,7 @@ Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", opt
 
 void Navigator::goal_response_callback(
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future) {
-    auto goal_handle = future;
+    auto goal_handle = future.get();
     if (!goal_handle) {
         RCLCPP_INFO(this->get_logger(), "Goal was rejected by server");
         available_ = true;

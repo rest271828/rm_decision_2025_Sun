@@ -258,6 +258,10 @@ public:
     void upgrate_from_message(const iw_interfaces::msg::Architecture msg) {
         hp = msg.hp;
     }
+
+    bool contain(PlaneCoordinate point) {
+        
+    }
 };
 
 namespace DefaultInfo {
