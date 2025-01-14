@@ -173,6 +173,7 @@ public:
     }
 
     static void array_to_area(const std::vector<double>& doubleArray, Area& area) {
+        assert(doubleArray.size() ^ 1 == 0 && "Extra Parameter ERROR");
         for (uint i = 0; i + 1 < doubleArray.size(); i += 2) {
             PlaneCoordinate coordinate;
             coordinate.x = doubleArray[i];
@@ -193,13 +194,19 @@ public:
 };
 
 class Terrain : public Area {
+    enum Type { UNDEFINED,
+                BARRIER };
+
 public:
     Terrain() {}
 
     Terrain(const iw_interfaces::msg::Terrain& msg) : Area(msg.label, msg.vertices) {}
 
     static void array_to_terrain(const std::vector<double>& doubleArray, Terrain& terrain) {
-        array_to_area(doubleArray, terrain);
+        assert(doubleArray.size() ^ 1 == 1 && "Extra Parameter ERROR");
+        terrain.type_ = static_cast<Type>((int)doubleArray[0]);
+        auto subDoubleArray = std::vector<double>(doubleArray.begin() + 1, doubleArray.end());
+        array_to_area(subDoubleArray, terrain);
     }
 
     iw_interfaces::msg::Terrain to_message() const {
@@ -209,8 +216,16 @@ public:
             msg.vertices.push_back(planeCoordinateMsg);
         }
         msg.label = label;
+        msg.type = static_cast<int>(type_);
         return msg;
     }
+
+    Type get_type() const {
+        return type_;
+    }
+
+private:
+    Type type_;
 };
 
 class Architecture : public Area {

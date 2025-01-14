@@ -5,12 +5,17 @@ import os
 
 
 def generate_launch_description():
-    navigator_node = Node(
-        package="navigator",
-        name="navigator_node",
-        executable="navigator_node",
+    node_params = os.path.join(
+        get_package_share_directory("sensing_unit"), "config", "node_params.yaml"
+    )
+    
+    sensing_unit_node = Node(
+        package="sensing_unit",
+        name="sensing_unit_node",
+        executable="sensing_unit_node",
         namespace="",
         output="screen",
+        parameters=[node_params],
     )
 
-    return LaunchDescription([rm_decision_node])
+    return LaunchDescription([sensing_unit_node])

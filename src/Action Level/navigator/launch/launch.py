@@ -13,4 +13,4 @@ def generate_launch_description():
         output="screen",
     )
 
-    return LaunchDescription([rm_decision_node])
+    return LaunchDescription([navigator_node])

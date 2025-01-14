@@ -5,12 +5,12 @@ import os
 
 
 def generate_launch_description():
-    fsm_solution_node = Node(
-        package="fsm_solution",
-        name="fsm_solution_node",
-        executable="fsm_solution_node",
+    weak_solution_node = Node(
+        package="weak_solution",
+        name="weak_solution_node",
+        executable="weak_solution_node",
         namespace="",
         output="screen",
     )
 
-    return LaunchDescription([fsm_solution_node])
+    return LaunchDescription([weak_solution_node])

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(fsm_solution)
+project(weak_solution)
 
 ## Use C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -24,7 +24,7 @@ ament_auto_find_build_dependencies()
 ###########
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-        src/fsm_solution.cpp
+        src/weak_solution.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}

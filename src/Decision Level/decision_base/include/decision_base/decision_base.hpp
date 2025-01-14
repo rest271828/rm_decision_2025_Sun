@@ -12,7 +12,7 @@ public:
     explicit DecisionBase(uint selfId, std::string nodeName, const rclcpp::NodeOptions& options);
 
 protected:
-    void nav_to_pose(const Pose& pose, bool instant);
+    void nav_to_pose(const PoseStamped& stampedPose, bool instant);
     ChessboardHandle chessboard_;
     Prism prism_;
 

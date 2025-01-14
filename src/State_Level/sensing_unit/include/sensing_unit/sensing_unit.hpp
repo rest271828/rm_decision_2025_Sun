@@ -1,5 +1,6 @@
 #pragma once
 
+#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
 #include <cassert>
@@ -58,6 +59,8 @@ private:
     rclcpp::Subscription<rm_decision_interfaces::msg::ReceiveSerial>::SharedPtr receive_serial_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::RobotStatus>::SharedPtr robot_status_sub_;
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
+    std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
+    std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
 
     // chessboard发布者
     rclcpp::Publisher<iw_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
@@ -82,5 +85,7 @@ private:
     void robot_status_callback(const rm_decision_interfaces::msg::RobotStatus::SharedPtr msg);
 
     void target_callback(const auto_aim_interfaces::msg::Target::SharedPtr msg);
+
+    void SensingUnit::get_current_pose();
 };
 }  // namespace RMDecision

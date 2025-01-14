@@ -23,11 +23,9 @@ void DecisionBase::prism_sub_callback(const iw_interfaces::msg::Prism::SharedPtr
     prism_.update_from_message(*msg);
 }
 
-void DecisionBase::nav_to_pose(const Pose& pose, bool instant) {
+void DecisionBase::nav_to_pose(const PoseStamped& stampedPose, bool instant) {
     navigator_interfaces::msg::Navigate msg;
-    msg.pose.header.stamp = this->now();
-    msg.pose.header.frame_id = "map";
-    msg.pose.pose = pose;
+    msg.pose = stampedPose;
     msg.instant = instant;
     nav_pub_->publish(msg);
 }
