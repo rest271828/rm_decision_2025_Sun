@@ -4,7 +4,7 @@ using namespace RMDecision;
 
 ChessboardHandle::ChessboardHandle(const iw_interfaces::msg::Chessboard& msg) : initialed(msg.initialed) {
     faction = static_cast<RMDecision::Faction>(msg.faction);
-    timestamp = msg.timestamp;
+    timestamp = rclcpp::Time(msg.timestamp.sec, msg.timestamp.nanosec);
     robots = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Robot>>>();
     terrains = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Terrain>>>();
     architectures = std::make_shared<std::unordered_map<std::string, std::shared_ptr<Architecture>>>();
@@ -73,7 +73,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
 
 void ChessboardHandle::upgrate_from_message(const iw_interfaces::msg::Chessboard& msg) {
     assert(initialed && "Chessboard uninitialized ERROR");
-    timestamp = msg.timestamp;
+    timestamp = rclcpp::Time(msg.timestamp.sec, msg.timestamp.nanosec);
     for (const auto& robotMsg : msg.robots) {
         auto& robot = (*robots)[robotMsg.label];
         robot->upgrate_from_message(robotMsg);

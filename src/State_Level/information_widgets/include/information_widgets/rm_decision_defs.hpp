@@ -20,6 +20,7 @@ enum Faction { UNKNOWN,
                BLUE };
 
 typedef geometry_msgs::msg::PoseStamped PoseStamped;
+typedef geometry_msgs::msg::Pose Pose;
 
 class PlaneCoordinate {
 public:

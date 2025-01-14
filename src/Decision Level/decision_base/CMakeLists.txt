@@ -17,14 +17,11 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 set(SRC_LIST
-  src/chessboard_def.cpp
-  src/prism_def.cpp
+  src/decision_base.cpp
 )
 
 set(HEAD_LIST
-  include/information_widgets/chessboard_def.hpp
-  include/information_widgets/prism_def.hpp
-  include/information_widgets/rm_decision_defs.hpp
+  include/decision_base/decision_base.hpp
 )
 
 ament_auto_add_library(los_controller_lib SHARED

@@ -2,25 +2,7 @@
 
 using namespace RMDecision;
 
-void SensingUnit::init_chessboard(const Faction& faction) {
-    chessboard_.faction = faction;
-    for (const auto& elem : DefaultInfo::robots) {
-        (*chessboard_.robots)[elem.first] = std::make_shared<Robot>(elem.second);
-    }
-    init_map_declare<std::vector<double>, Terrain>(
-        RMDecision::DefaultInfo::terrains, *chessboard_.terrains, Terrain::array_to_terrain);
-    init_map_declare<std::vector<double>, Architecture>(
-        RMDecision::DefaultInfo::architecture, *chessboard_.architectures, Architecture::array_to_architecture);
-
-    name_objects<Robot>(*chessboard_.robots);
-    name_objects<Terrain>(*chessboard_.terrains);
-    name_objects<Architecture>(*chessboard_.architectures);
-    if (chessboard_.faction != UNKNOWN) {
-        chessboard_.initialed = true;
-    }
-}
-
-SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_unit", options), chessboard_(UNKNOWN) {
+SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_unit", options), chessboard_(Faction::UNKNOWN) {
     std::string faction_str;
     this->declare_parameter<std::string>("faction");
 
@@ -66,6 +48,24 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
     prism_pub_ = this->create_publisher<iw_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10);
     timer_ = this->create_wall_timer(std::chrono::milliseconds(20), std::bind(&SensingUnit::timer_callback, this));
+}
+
+void SensingUnit::init_chessboard(const Faction& faction) {
+    chessboard_.faction = faction;
+    for (const auto& elem : DefaultInfo::robots) {
+        (*chessboard_.robots)[elem.first] = std::make_shared<Robot>(elem.second);
+    }
+    init_map_declare<std::vector<double>, Terrain>(
+        RMDecision::DefaultInfo::terrains, *chessboard_.terrains, Terrain::array_to_terrain);
+    init_map_declare<std::vector<double>, Architecture>(
+        RMDecision::DefaultInfo::architecture, *chessboard_.architectures, Architecture::array_to_architecture);
+
+    name_objects<Robot>(*chessboard_.robots);
+    name_objects<Terrain>(*chessboard_.terrains);
+    name_objects<Architecture>(*chessboard_.architectures);
+    if (chessboard_.faction != UNKNOWN) {
+        chessboard_.initialed = true;
+    }
 }
 
 void SensingUnit::timer_callback() {
