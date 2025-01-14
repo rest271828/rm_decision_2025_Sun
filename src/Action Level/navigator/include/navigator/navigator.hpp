@@ -9,7 +9,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
-namespace RMDecision {
 enum NavState {
     INIT,
     REACHED,
@@ -60,4 +59,3 @@ private:
 
     void get_current_pose();
 };
-}  // namespace RMDecision

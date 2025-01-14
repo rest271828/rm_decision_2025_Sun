@@ -173,7 +173,7 @@ public:
     }
 
     static void array_to_area(const std::vector<double>& doubleArray, Area& area) {
-        assert(doubleArray.size() ^ 1 == 0 && "Extra Parameter ERROR");
+        assert((doubleArray.size() & 1) == 0 && "Extra Parameter ERROR");
         for (uint i = 0; i + 1 < doubleArray.size(); i += 2) {
             PlaneCoordinate coordinate;
             coordinate.x = doubleArray[i];
@@ -203,7 +203,7 @@ public:
     Terrain(const iw_interfaces::msg::Terrain& msg) : Area(msg.label, msg.vertices) {}
 
     static void array_to_terrain(const std::vector<double>& doubleArray, Terrain& terrain) {
-        assert(doubleArray.size() ^ 1 == 1 && "Extra Parameter ERROR");
+        assert((doubleArray.size() & 1) == 1 && "Extra Parameter ERROR");
         terrain.type_ = static_cast<Type>((int)doubleArray[0]);
         auto subDoubleArray = std::vector<double>(doubleArray.begin() + 1, doubleArray.end());
         array_to_area(subDoubleArray, terrain);

@@ -1,6 +1,6 @@
 #include "navigator/navigator.hpp"
 
-RMDecision::Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
+Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
     nav_msg_sub_ = this->create_subscription<navigator_interfaces::msg::Navigate>(
         "to_navigator", 10, std::bind(&Navigator::nav_callback, this, std::placeholders::_1));
     current_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("/navigator/current_pose", 10);
@@ -23,7 +23,7 @@ RMDecision::Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("nav
     available_ = true;
 }
 
-void RMDecision::Navigator::goal_response_callback(
+void Navigator::goal_response_callback(
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future) {
     auto goal_handle = future;
     if (!goal_handle) {
@@ -36,55 +36,55 @@ void RMDecision::Navigator::goal_response_callback(
     goal_handle_ = goal_handle;
 }
 
-void RMDecision::Navigator::feedback_callback(
+void Navigator::feedback_callback(
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::SharedPtr future,
     const std::shared_ptr<const nav2_msgs::action::NavigateToPose::Feedback> feedback) {
     RCLCPP_INFO(this->get_logger(), "Received feedback: distance to target point: %.2f m", feedback->distance_remaining);
 }
 
-void RMDecision::Navigator::result_callback(
+void Navigator::result_callback(
     const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult& result) {
     switch (result.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
         RCLCPP_INFO(this->get_logger(), "Goal was reached!");
-        nav_state_ = REACHED;
+        nav_state_ = NavState::REACHED;
         available_ = true;
         failed_count_ = 0;
         endtime_ = std::chrono::steady_clock::now();
         break;
     case rclcpp_action::ResultCode::ABORTED:
         RCLCPP_INFO(this->get_logger(), "Goal was aborted");
-        nav_state_ = ABORTED;
+        nav_state_ = NavState::ABORTED;
         available_ = true;
         failed_count_++;
         break;
     case rclcpp_action::ResultCode::CANCELED:
         RCLCPP_INFO(this->get_logger(), "Goal was canceled");
-        nav_state_ = CANCELED;
+        nav_state_ = NavState::CANCELED;
         available_ = true;
         failed_count_++;
         break;
     default:
         RCLCPP_INFO(get_logger(), "Unknown result code");
-        nav_state_ = UNKNOWN;
+        nav_state_ = NavState::UNKNOWN;
         available_ = true;
         failed_count_++;
         break;
     }
 }
 
-void RMDecision::Navigator::nav_callback(const navigator_interfaces::msg::Navigate::SharedPtr msg) {
+void Navigator::nav_callback(const navigator_interfaces::msg::Navigate::SharedPtr msg) {
     if (msg->instant) {
         nav_cancel();
     }
     nav_to_pose(msg->pose);
 }
 
-void RMDecision::Navigator::timer_callback() {
+void Navigator::timer_callback() {
     get_current_pose();
 }
 
-void RMDecision::Navigator::nav_to_pose(const geometry_msgs::msg::PoseStamped& msg) {
+void Navigator::nav_to_pose(const geometry_msgs::msg::PoseStamped& msg) {
     nav_to_pose_client_->wait_for_action_server();
     auto goal_msg = nav2_msgs::action::NavigateToPose::Goal();
     goal_msg.pose = msg;
@@ -93,14 +93,14 @@ void RMDecision::Navigator::nav_to_pose(const geometry_msgs::msg::PoseStamped& m
     send_goal_future_ = nav_to_pose_client_->async_send_goal(goal_msg, send_goal_options_);
 }
 
-void RMDecision::Navigator::nav_cancel() {
+void Navigator::nav_cancel() {
     if (goal_handle_) {
         nav_to_pose_client_->async_cancel_goal(goal_handle_);
         RCLCPP_INFO(this->get_logger(), "Goal cancel request sent");
     }
 }
 
-void RMDecision::Navigator::get_current_pose() {
+void Navigator::get_current_pose() {
     geometry_msgs::msg::TransformStamped odom_msg;
     try {
         odom_msg = tf2_buffer_->lookupTransform(
@@ -124,4 +124,4 @@ void RMDecision::Navigator::get_current_pose() {
 }
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(RMDecision::Navigator)
+RCLCPP_COMPONENTS_REGISTER_NODE(Navigator)
