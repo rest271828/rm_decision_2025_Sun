@@ -11,7 +11,7 @@ class DecisionBase : public rclcpp::Node {
 public:
     explicit DecisionBase(uint selfId, std::string nodeName, const rclcpp::NodeOptions &options);
 
-private:
+protected:
     rclcpp::Subscription<iw_interfaces::msg::Chessboard>::SharedPtr chessboard_sub_;
     rclcpp::Subscription<iw_interfaces::msg::Prism>::SharedPtr prism_sub_;
     rclcpp::Publisher<navigator_interfaces::msg::Navigate>::SharedPtr nav_pub_;
