@@ -246,7 +246,7 @@ public:
 };
 
 namespace DefaultInfo {
-std::unordered_map<std::string, RMDecision::Robot> robots = {
+const std::unordered_map<std::string, RMDecision::Robot> robots = {
     {"R1", Robot("R1", RED, 1, PoseStamped(), 150, 1)},
     {"R2", Robot("R2", RED, 2, PoseStamped(), 150, 1)},
     {"R3", Robot("R3", RED, 3, PoseStamped(), 150, 1)},
@@ -261,7 +261,7 @@ std::unordered_map<std::string, RMDecision::Robot> robots = {
     {"B7", Robot("B7", BLUE, 7, PoseStamped(), 600, 10)},
 };
 
-std::unordered_map<std::string, std::vector<double>> terrains = {
+const std::unordered_map<std::string, std::vector<double>> terrains = {
     {"Guard_points", {}},
     {"self_addhp_point", {}},
     {"self_base_point", {}},
@@ -278,7 +278,7 @@ std::unordered_map<std::string, std::vector<double>> terrains = {
     {"po_area3", {}},
 };
 
-std::unordered_map<std::string, std::vector<double>> architecture = {
+const std::unordered_map<std::string, std::vector<double>> architecture = {
     {"Red_Outpost", {}},
     {"Red_Base", {}},
     {"Blue_Outpost", {}},
