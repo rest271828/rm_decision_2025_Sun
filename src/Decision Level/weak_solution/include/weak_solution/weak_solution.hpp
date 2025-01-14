@@ -6,10 +6,12 @@ class WeakSolution : public DecisionBase {
 public:
     explicit WeakSolution(const rclcpp::NodeOptions& options);
 
-    ~WeakSolution() override;
-
 private:
-    PlaneCoordinate generate_random_point(double radius);
+    rclcpp::TimerBase::SharedPtr timer_;
+
+    void timer_callback();
+
+    PlaneCoordinate get_random_point(double radius);
 
     void to_target_point(const PlaneCoordinate& point);
 

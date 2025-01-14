@@ -1,16 +1,18 @@
 #include "weak_solution/weak_solution.hpp"
 #include <random>
 using namespace RMDecision;
+using namespace std::chrono_literals;
 
 WeakSolution::WeakSolution(const rclcpp::NodeOptions& options) : DecisionBase(7, "weak_solution", options) {
-
+    timer_ = this->create_wall_timer(5s, std::bind(&WeakSolution::timer_callback, this));
 }
 
-WeakSolution::~WeakSolution() {
-    
+void WeakSolution::timer_callback() {
+    PlaneCoordinate nextPoint = get_random_point(1.5);
+    to_target_point(nextPoint);
 }
 
-PlaneCoordinate WeakSolution::generate_random_point(double radius) {
+PlaneCoordinate WeakSolution::get_random_point(double radius) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-radius, radius);
