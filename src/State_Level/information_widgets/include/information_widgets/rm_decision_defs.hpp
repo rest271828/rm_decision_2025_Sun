@@ -259,9 +259,9 @@ public:
         hp = msg.hp;
     }
 
-    bool contain(PlaneCoordinate point) {
+    // bool contain(PlaneCoordinate point) {
         
-    }
+    // }
 };
 
 namespace DefaultInfo {

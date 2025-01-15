@@ -46,7 +46,7 @@ void Navigator::result_callback(
     const rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>::WrappedResult& result) {
     switch (result.code) {
     case rclcpp_action::ResultCode::SUCCEEDED:
-        RCLCPP_INFO(this->get_logger(), "Goal was reached!");
+        RCLCPP_INFO(this->get_logger(), "Goal was reached");
         nav_state_ = NavState::REACHED;
         available_ = true;
         failed_count_ = 0;
@@ -101,6 +101,7 @@ void Navigator::nav_cancel() {
 }
 
 void Navigator::get_current_pose() {
+    RCLCPP_INFO(this->get_logger(), "Getting current pose.");
     geometry_msgs::msg::TransformStamped odom_msg;
     try {
         odom_msg = tf2_buffer_->lookupTransform(
