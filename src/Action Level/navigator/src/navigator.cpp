@@ -18,7 +18,7 @@ Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", opt
                                                     std::placeholders::_2);
     send_goal_options_.result_callback = std::bind(&Navigator::result_callback, this, std::placeholders::_1);
 
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(5000), std::bind(&Navigator::timer_callback, this), callback_group_);
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(200), std::bind(&Navigator::timer_callback, this), callback_group_);
 
     tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
@@ -39,7 +39,7 @@ void Navigator::goal_response_callback(
     } else {
         RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
     }
-    // goal_handle_ = goal_handle;
+    goal_handle_ = goal_handle;
 }
 
 void Navigator::feedback_callback(
@@ -107,16 +107,15 @@ void Navigator::nav_cancel() {
 }
 
 void Navigator::get_current_pose() {
-    // RCLCPP_INFO(this->get_logger(), "Getting current pose.");
     geometry_msgs::msg::TransformStamped odom_msg;
     try {
         odom_msg = tf2_buffer_->lookupTransform(
                 "map", "livox_frame",
                 tf2::TimePointZero);
     } catch (const tf2::TransformException &ex) {
-        // RCLCPP_INFO(
-        //         this->get_logger(), "Could not transform : %s",
-        //         ex.what());
+        RCLCPP_INFO(
+                this->get_logger(), "Could not transform : %s",
+                ex.what());
         return;
     }
     RMDecision::PoseStamped currentPose;
