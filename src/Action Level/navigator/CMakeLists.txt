@@ -25,13 +25,12 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
         src/navigator.cpp
+        include/navigator/navigator.hpp
 )
 
-rclcpp_components_register_node(${PROJECT_NAME}
-        PLUGIN Navigator
-        EXECUTABLE ${PROJECT_NAME}_node
+ament_auto_add_executable(${PROJECT_NAME}_node
+        src/node_exec.cpp
 )
-
 #############
 ## Testing ##
 #############
@@ -53,6 +52,7 @@ ament_auto_package(
         INSTALL_TO_SHARE
         launch
 )
+
 install(DIRECTORY
         launch
         DESTINATION share/${PROJECT_NAME}

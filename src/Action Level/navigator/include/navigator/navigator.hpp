@@ -35,6 +35,8 @@ private:
     std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
 
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
+
     NavState nav_state_;
     int failed_count_;
     bool available_;
