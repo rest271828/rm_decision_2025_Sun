@@ -53,7 +53,7 @@ public:
         return PlaneCoordinate(x - another.x, y - another.y);
     }
 
-    inline void operator+=(const PlaneCoordinate& another) {
+    inline void operator-=(const PlaneCoordinate& another) {
         x -= another.x;
         y -= another.y;
     }
@@ -135,8 +135,8 @@ public:
         return (*this * another == 0);
     }
 
+    // 判断由点p1, p2连接的线段和由点p3, p4连接的线段是否相交
     static bool intersect(const PlaneCoordinate& p1, const PlaneCoordinate& p2, const PlaneCoordinate& p3, const PlaneCoordinate& p4) {
-        // 判断由点p1, p2连接的线段和由点p3, p4连接的线段是否相交
         double x1 = p1.x, x2 = p2.x, x3 = p3.x, x4 = p4.x;
         double n1 = std::min(x1, x2), n2 = std::min(x3, x4);
         double m1 = std::max(x1, x2), m2 = std::max(x3, x4);
@@ -258,7 +258,7 @@ public:
     bool contain(const PlaneCoordinate& point) const {
         auto infinity = PlaneCoordinate(point.x, INF);
         uint intersect_count = 0;
-        for (int i = 0; i + 1 < vertices_.size(); i++) {
+        for (size_t i = 0; i + 1 < vertices_.size(); i++) {
             if (PlaneCoordinate::intersect(point, infinity, vertices_[i], vertices_[i + 1])){
                 intersect_count++;
             }
@@ -270,7 +270,7 @@ public:
     }
 
 protected:
-    std::vector<PlaneCoordinate> vertices_;  // 按照逆时针顺序初始化的顶点坐标
+    std::vector<PlaneCoordinate> vertices_;  // 按照逆/顺时针顺序初始化的顶点坐标
 };
 
 class Terrain : public Area {
