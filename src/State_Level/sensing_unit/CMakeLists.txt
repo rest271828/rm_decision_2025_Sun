@@ -32,9 +32,17 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 ament_auto_add_executable(${PROJECT_NAME}_node
-        src/sensing_unit.cpp
         src/node_exec.cpp
 )
+
+# ament_auto_add_library(${PROJECT_NAME} SHARED
+#         src/sensing_unit.cpp
+# )
+
+# rclcpp_components_register_node(${PROJECT_NAME}
+#         PLUGIN SensingUnit
+#         EXECUTABLE ${PROJECT_NAME}_node
+# )
 
 #############
 ## Testing ##

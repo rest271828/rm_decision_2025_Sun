@@ -25,7 +25,7 @@ Navigator::Navigator(const rclcpp::NodeOptions& options) : Node("navigator", opt
 
     save_server_ = this->create_service<ig_lio_c_msgs::srv::Savereloc>(
         "SaveReloc", std::bind(&Navigator::save_callback, this,std::placeholders::_1, std::placeholders::_2),
-        rclcpp::QoS(rclcpp::ServicesQoS()));
+        rclcpp::QoS(rclcpp::ServicesQoS()));  // 22.04: rmw_qos_profile_services_default
 
     endtime_ = std::chrono::steady_clock::now();
     nav_state_ = INIT;
