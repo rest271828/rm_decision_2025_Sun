@@ -7,9 +7,7 @@
 #include "information_widgets/chessboard_def.hpp"
 #include "information_widgets/prism_def.hpp"
 #include "rm_msg_includes.hpp"
-
-namespace RMDecision {
-
+using namespace RMDecision;
 class SensingUnit : public rclcpp::Node {
 public:
     SensingUnit(const rclcpp::NodeOptions& options);
@@ -56,11 +54,10 @@ private:
     rclcpp::Subscription<auto_aim_interfaces::msg::Target>::SharedPtr target_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr current_pose_sub_;
 
-    // chessboard发布者
     rclcpp::Publisher<iw_interfaces::msg::Chessboard>::SharedPtr chessboard_pub_;
-
-    // prism发布者
     rclcpp::Publisher<iw_interfaces::msg::Prism>::SharedPtr prism_pub_;
+
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
 
     rclcpp::TimerBase::SharedPtr timer_;
 
@@ -82,4 +79,3 @@ private:
 
     void current_pose_callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
 };
-}  // namespace RMDecision

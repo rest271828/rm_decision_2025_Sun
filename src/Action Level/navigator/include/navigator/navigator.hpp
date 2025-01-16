@@ -2,8 +2,9 @@
 #include <tf2_ros/transform_listener.h>
 
 #include "geometry_msgs/msg/pose.hpp"
-#include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "ig_lio_c_msgs/srv/savereloc.hpp"
 #include "information_widgets/rm_decision_defs.hpp"
+#include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "navigator_interfaces/msg/navigate.hpp"
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -37,6 +38,8 @@ private:
 
     rclcpp::CallbackGroup::SharedPtr callback_group_;
 
+    rclcpp::Service<ig_lio_c_msgs::srv::Savereloc>::SharedPtr save_server_;
+
     NavState nav_state_;
     int failed_count_;
     bool available_;
@@ -60,4 +63,7 @@ private:
     void nav_cancel();
 
     void get_current_pose();
+
+    void save_callback(const ig_lio_c_msgs::srv::Savereloc::Request::SharedPtr request,
+                       const ig_lio_c_msgs::srv::Savereloc::Response::SharedPtr response);
 };

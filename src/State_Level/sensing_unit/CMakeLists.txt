@@ -17,6 +17,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #######################
 
 find_package(ament_cmake_auto REQUIRED)
+include_directories(include)
 ament_auto_find_build_dependencies()
 
 ###########
@@ -25,11 +26,14 @@ ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
         src/sensing_unit.cpp
+        src/node_exec.cpp
+        include/sensing_unit/sensing_unit.hpp
+        include/sensing_unit/rm_msg_includes.hpp
 )
 
-rclcpp_components_register_node(${PROJECT_NAME}
-        PLUGIN RMDecision::SensingUnit
-        EXECUTABLE ${PROJECT_NAME}_node
+ament_auto_add_executable(${PROJECT_NAME}_node
+        src/sensing_unit.cpp
+        src/node_exec.cpp
 )
 
 #############
@@ -58,8 +62,8 @@ install(DIRECTORY
         DESTINATION share/${PROJECT_NAME}
 )
 
-install(DIRECTORY
-        config
-        DESTINATION share/${PROJECT_NAME}
-)
+# install(DIRECTORY
+#         config
+#         DESTINATION share/${PROJECT_NAME}
+# )
 

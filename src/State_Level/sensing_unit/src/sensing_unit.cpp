@@ -20,37 +20,43 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     } else {
         faction = UNKNOWN;
     }
-
     init_chessboard(faction);
+
+    callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    auto subOpt = rclcpp::SubscriptionOptions();
+    auto pubOpt = rclcpp::PublisherOptions();
+    subOpt.callback_group = callback_group_;
+    pubOpt.callback_group = callback_group_;
+
     all_robot_hp_sub_ = this->create_subscription<rm_decision_interfaces::msg::AllRobotHP>(
-        "all_robot_hp", 10, std::bind(&SensingUnit::all_robot_hp_callback, this, std::placeholders::_1));
+        "all_robot_hp", 10, std::bind(&SensingUnit::all_robot_hp_callback, this, std::placeholders::_1), subOpt);
 
     friend_location_sub_ = this->create_subscription<rm_decision_interfaces::msg::FriendLocation>(
-        "friend_location", 10, std::bind(&SensingUnit::friend_location_callback, this, std::placeholders::_1));
+        "friend_location", 10, std::bind(&SensingUnit::friend_location_callback, this, std::placeholders::_1), subOpt);
 
     tracking_pose_sub_ = this->create_subscription<geometry_msgs::msg::PointStamped>(
-        "/tracker/enemypose", 10, std::bind(&SensingUnit::tracking_pose_callback, this, std::placeholders::_1));
+        "/tracker/enemypose", 10, std::bind(&SensingUnit::tracking_pose_callback, this, std::placeholders::_1), subOpt);
 
     from_serial_sub_ = this->create_subscription<rm_decision_interfaces::msg::FromSerial>(
-        "fromjudge", 10, std::bind(&SensingUnit::from_serial_callback, this, std::placeholders::_1));
+        "fromjudge", 10, std::bind(&SensingUnit::from_serial_callback, this, std::placeholders::_1), subOpt);
 
     receive_serial_sub_ = this->create_subscription<rm_decision_interfaces::msg::ReceiveSerial>(
-        "receive_serial", 10, std::bind(&SensingUnit::receive_serial_callback, this, std::placeholders::_1));
+        "receive_serial", 10, std::bind(&SensingUnit::receive_serial_callback, this, std::placeholders::_1), subOpt);
 
     robot_status_sub_ = this->create_subscription<rm_decision_interfaces::msg::RobotStatus>(
-        "robot_status", 10, std::bind(&SensingUnit::robot_status_callback, this, std::placeholders::_1));
+        "robot_status", 10, std::bind(&SensingUnit::robot_status_callback, this, std::placeholders::_1), subOpt);
 
     target_sub_ = this->create_subscription<auto_aim_interfaces::msg::Target>(
-        "/tracker/target", rclcpp::SensorDataQoS(), std::bind(&SensingUnit::target_callback, this, std::placeholders::_1));
+        "/tracker/target", rclcpp::SensorDataQoS(), std::bind(&SensingUnit::target_callback, this, std::placeholders::_1), subOpt);
 
     current_pose_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
-        "/navigator/current_pose", 10, std::bind(&SensingUnit::current_pose_callback, this, std::placeholders::_1));
+        "/navigator/current_pose", 10, std::bind(&SensingUnit::current_pose_callback, this, std::placeholders::_1), subOpt);
 
-    chessboard_pub_ = this->create_publisher<iw_interfaces::msg::Chessboard>("rm_decision/chessboard", 10);
-
+    chessboard_pub_ = this->create_publisher<iw_interfaces::msg::Chessboard>("rm_decision/chessboard", 10, pubOpt);
     std::string prismPubTopicName = "rm_decision/prism/" + std::to_string(prism_.self.id);
-    prism_pub_ = this->create_publisher<iw_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10);
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(20), std::bind(&SensingUnit::timer_callback, this));
+    prism_pub_ = this->create_publisher<iw_interfaces::msg::Prism>(prismPubTopicName.c_str(), 10, pubOpt);
+
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&SensingUnit::timer_callback, this), callback_group_);
 }
 
 void SensingUnit::init_chessboard(const Faction& faction) {
@@ -224,5 +230,6 @@ void SensingUnit::current_pose_callback(const geometry_msgs::msg::PoseStamped::S
     chessboard_.timestamp = this->now();
 }
 
+
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(RMDecision::SensingUnit)
+RCLCPP_COMPONENTS_REGISTER_NODE(SensingUnit)

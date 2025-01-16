@@ -15,6 +15,9 @@
 
 namespace RMDecision {
 
+const double INF = 1e9;
+
+
 enum Faction { UNKNOWN,
                RED,
                BLUE };
@@ -33,12 +36,26 @@ public:
 
     PlaneCoordinate(const iw_interfaces::msg::PlaneCoordinate msg) : x(msg.x), y(msg.y) {}
 
+    PlaneCoordinate(const PlaneCoordinate& p1, const PlaneCoordinate& p2) {
+        *this = p2 - p1;
+    }
+
     inline PlaneCoordinate operator+(const PlaneCoordinate& another) const {
         return PlaneCoordinate(x + another.x, y + another.y);
     }
 
+    inline void operator+=(const PlaneCoordinate& another) {
+        x += another.x;
+        y += another.y;
+    }
+
     inline PlaneCoordinate operator-(const PlaneCoordinate& another) const {
         return PlaneCoordinate(x - another.x, y - another.y);
+    }
+
+    inline void operator+=(const PlaneCoordinate& another) {
+        x -= another.x;
+        y -= another.y;
     }
 
     inline PlaneCoordinate operator-() const {
@@ -102,6 +119,54 @@ public:
         msg.y = y;
         return msg;
     }
+
+    static std::pair<double, double> line_across(const PlaneCoordinate& p1, const PlaneCoordinate& p2) {
+        double k, b;
+        k = (p1.y - p2.y) / (p1.x - p2.x);
+        b = (p2.y * p1.x - p1.y * p2.x) / (p1.x - p2.x);
+        return std::pair<double, double>(k, b);
+    }
+
+    inline bool parrallel_to(const PlaneCoordinate& another) {
+        return (another.x * y == another.y * x);
+    }
+
+    inline bool perp_to(const PlaneCoordinate& another) {
+        return (*this * another == 0);
+    }
+
+    static bool intersect(const PlaneCoordinate& p1, const PlaneCoordinate& p2, const PlaneCoordinate& p3, const PlaneCoordinate& p4) {
+        // 判断由点p1, p2连接的线段和由点p3, p4连接的线段是否相交
+        double x1 = p1.x, x2 = p2.x, x3 = p3.x, x4 = p4.x;
+        double n1 = std::min(x1, x2), n2 = std::min(x3, x4);
+        double m1 = std::max(x1, x2), m2 = std::max(x3, x4);
+        double left, right;
+        if (n1 > m2 || n2 > m1) {
+            return false;
+        }
+        if (m1 - n2 >= m2 - n1) {
+            left = n1;
+            right = m2;
+        } else {
+            left = n2;
+            right = m1;
+        }
+        double intersectionAbscissa = line_intersection_abscissa(p1, p2, p3, p4);
+        return (intersectionAbscissa >= left && intersectionAbscissa <= right);
+    }
+
+    static double line_intersection_abscissa(const PlaneCoordinate& p1, const PlaneCoordinate& p2, const PlaneCoordinate& p3, const PlaneCoordinate& p4) {
+        if (PlaneCoordinate(p1, p2).parrallel_to(PlaneCoordinate(p3, p4))) {
+            return INF;
+        }
+        std::pair<double, double> coeff1 = line_across(p1, p2);
+        std::pair<double, double> coeff2 = line_across(p3, p4);
+        double k1 = coeff1.first;
+        double k2 = coeff2.first;
+        double b1 = coeff1.second;
+        double b2 = coeff2.second;
+        return - (b1 - b2) / (k1 - k2);
+    }
 };
 
 class Object {
@@ -156,19 +221,17 @@ public:
 
 class Area : public Object {
 public:
-    std::vector<PlaneCoordinate> vertices;
-
     Area() {}
 
     Area(const iw_interfaces::msg::Area& msg) : Object(msg.label) {
         for (const auto& planeCoordinateMsg : msg.vertices) {
-            vertices.push_back(PlaneCoordinate(planeCoordinateMsg));
+            vertices_.push_back(PlaneCoordinate(planeCoordinateMsg));
         }
     }
 
-    Area(const std::string& label_, const std::vector<iw_interfaces::msg::PlaneCoordinate>& msgVertices) : Object(label_) {
-        for (const auto& planeCoordinateMsg : msgVertices) {
-            vertices.push_back(PlaneCoordinate(planeCoordinateMsg));
+    Area(const std::string& label_, const std::vector<iw_interfaces::msg::PlaneCoordinate>& msgvertices_) : Object(label_) {
+        for (const auto& planeCoordinateMsg : msgvertices_) {
+            vertices_.push_back(PlaneCoordinate(planeCoordinateMsg));
         }
     }
 
@@ -178,19 +241,36 @@ public:
             PlaneCoordinate coordinate;
             coordinate.x = doubleArray[i];
             coordinate.y = doubleArray[i + 1];
-            area.vertices.push_back(coordinate);
+            area.vertices_.push_back(coordinate);
         }
     }
 
     iw_interfaces::msg::Area to_message() const {
         auto msg = iw_interfaces::msg::Area();
-        for (const auto& vertex : vertices) {
+        for (const auto& vertex : vertices_) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
         }
         msg.label = label;
         return msg;
     }
+
+    bool contain(const PlaneCoordinate& point) const {
+        auto infinity = PlaneCoordinate(point.x, INF);
+        uint intersect_count = 0;
+        for (int i = 0; i + 1 < vertices_.size(); i++) {
+            if (PlaneCoordinate::intersect(point, infinity, vertices_[i], vertices_[i + 1])){
+                intersect_count++;
+            }
+        }
+        if (PlaneCoordinate::intersect(point, infinity, vertices_[0], *vertices_.end())) {
+            intersect_count++;
+        }
+        return (intersect_count % 2 == 1);
+    }
+
+protected:
+    std::vector<PlaneCoordinate> vertices_;  // 按照逆时针顺序初始化的顶点坐标
 };
 
 class Terrain : public Area {
@@ -211,7 +291,7 @@ public:
 
     iw_interfaces::msg::Terrain to_message() const {
         auto msg = iw_interfaces::msg::Terrain();
-        for (const auto& vertex : vertices) {
+        for (const auto& vertex : vertices_) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
         }
@@ -245,7 +325,7 @@ public:
 
     iw_interfaces::msg::Architecture to_message() const {
         auto msg = iw_interfaces::msg::Architecture();
-        for (const auto& vertex : vertices) {
+        for (const auto& vertex : vertices_) {
             auto planeCoordinateMsg = vertex.to_message();
             msg.vertices.push_back(planeCoordinateMsg);
         }

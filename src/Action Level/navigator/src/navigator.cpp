@@ -1,6 +1,6 @@
 #include "navigator/navigator.hpp"
 
-Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", options){
+Navigator::Navigator(const rclcpp::NodeOptions& options) : Node("navigator", options) {
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
     auto sub_opt = rclcpp::SubscriptionOptions();
     auto pub_opt = rclcpp::PublisherOptions();
@@ -13,15 +13,19 @@ Navigator::Navigator(const rclcpp::NodeOptions &options) : Node("navigator", opt
 
     nav_to_pose_client_ = rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(this, "navigate_to_pose", callback_group_);
     send_goal_options_.goal_response_callback = std::bind(&Navigator::goal_response_callback, this,
-                                                         std::placeholders::_1);
+                                                          std::placeholders::_1);
     send_goal_options_.feedback_callback = std::bind(&Navigator::feedback_callback, this, std::placeholders::_1,
-                                                    std::placeholders::_2);
+                                                     std::placeholders::_2);
     send_goal_options_.result_callback = std::bind(&Navigator::result_callback, this, std::placeholders::_1);
 
     timer_ = this->create_wall_timer(std::chrono::milliseconds(200), std::bind(&Navigator::timer_callback, this), callback_group_);
 
     tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
     tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
+
+    save_server_ = this->create_service<ig_lio_c_msgs::srv::Savereloc>(
+        "SaveReloc", std::bind(&Navigator::save_callback, this,std::placeholders::_1, std::placeholders::_2),
+        rclcpp::QoS(rclcpp::ServicesQoS()));
 
     endtime_ = std::chrono::steady_clock::now();
     nav_state_ = INIT;
@@ -110,12 +114,12 @@ void Navigator::get_current_pose() {
     geometry_msgs::msg::TransformStamped odom_msg;
     try {
         odom_msg = tf2_buffer_->lookupTransform(
-                "map", "livox_frame",
-                tf2::TimePointZero);
-    } catch (const tf2::TransformException &ex) {
+            "map", "livox_frame",
+            tf2::TimePointZero);
+    } catch (const tf2::TransformException& ex) {
         RCLCPP_INFO(
-                this->get_logger(), "Could not transform : %s",
-                ex.what());
+            this->get_logger(), "Could not transform : %s",
+            ex.what());
         return;
     }
     RMDecision::PoseStamped currentPose;
@@ -127,4 +131,9 @@ void Navigator::get_current_pose() {
     currentPose.pose.orientation = odom_msg.transform.rotation;
 
     current_pose_pub_->publish(currentPose);
+}
+
+void Navigator::save_callback(const ig_lio_c_msgs::srv::Savereloc::Request::SharedPtr request,
+                              const ig_lio_c_msgs::srv::Savereloc::Response::SharedPtr response) {
+    return;
 }
