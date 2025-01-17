@@ -33,3 +33,55 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 )
 
 ament_auto_package()
+
+# find_package(ament_cmake REQUIRED)
+# find_package(rclcpp REQUIRED)
+# find_package(std_msgs REQUIRED)
+# find_package(geometry_msgs REQUIRED)
+# find_package(rm_decision_interfaces REQUIRED)
+# find_package(iw_interfaces REQUIRED)
+
+# add_library(information_widgets SHARED
+#   include/information_widgets/chessboard_def.hpp
+#   include/information_widgets/prism_def.hpp
+#   include/information_widgets/rm_decision_defs.hpp
+#   src/chessboard_def.cpp
+#   src/prism_def.cpp
+#   )
+
+# target_include_directories(information_widgets PUBLIC
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#   $<INSTALL_INTERFACE:include>
+#   )
+
+# ament_target_dependencies(information_widgets PUBLIC 
+#   rclcpp
+#   std_msgs
+#   geometry_msgs
+#   rm_decision_interfaces
+#   iw_interfaces
+#   )
+
+# ament_export_targets(information_widgets HAS_LIBRARY_TARGET)
+# ament_export_dependencies(
+#   rclcpp
+#   std_msgs
+#   geometry_msgs
+#   rm_decision_interfaces
+#   iw_interfaces
+# )
+
+# install(
+#         DIRECTORY include/
+#         DESTINATION include
+# )
+
+# install(
+#         TARGETS information_widgets
+#         EXPORT information_widgets
+#         ARCHIVE DESTINATION lib
+#         LIBRARY DESTINATION lib
+#         RUNTIME DESTINATION bin
+#         INCLUDES DESTINATION include
+# )
+# ament_package()

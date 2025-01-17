@@ -7,14 +7,14 @@
 #include "information_widgets/chessboard_def.hpp"
 #include "information_widgets/prism_def.hpp"
 #include "rm_msg_includes.hpp"
-using namespace RMDecision;
+
 class SensingUnit : public rclcpp::Node {
 public:
     SensingUnit(const rclcpp::NodeOptions& options);
 
 private:
-    ChessboardHandle chessboard_;
-    Prism prism_;
+    RMDecision::ChessboardHandle chessboard_;
+    RMDecision::Prism prism_;
 
     template <typename T1, typename T2>
     void init_map_declare(const std::unordered_map<std::string, T1>& src, std::unordered_map<std::string, std::shared_ptr<T2>>& dist, void (*conversion)(const T1&, T2&) = nullptr) {
@@ -37,13 +37,13 @@ private:
 
     template <typename T>
     void name_objects(std::unordered_map<std::string, std::shared_ptr<T>>& map) {
-        static_assert(std::is_base_of<Object, T>::value, "T must be a descendant of Object.");
+        static_assert(std::is_base_of<RMDecision::Object, T>::value, "T must be a descendant of Object.");
         for (auto& elem : map) {
             elem.second->label = elem.first;
         }
     }
 
-    void init_chessboard(const Faction& faction);
+    void init_chessboard(const RMDecision::Faction& faction);
     // 消息订阅
     rclcpp::Subscription<rm_decision_interfaces::msg::AllRobotHP>::SharedPtr all_robot_hp_sub_;
     rclcpp::Subscription<rm_decision_interfaces::msg::FriendLocation>::SharedPtr friend_location_sub_;

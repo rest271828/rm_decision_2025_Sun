@@ -23,19 +23,19 @@ ChessboardHandle::ChessboardHandle(const iw_interfaces::msg::Chessboard& msg) : 
     initialed = true;
 }
 
-inline std::shared_ptr<Robot> ChessboardHandle::friend_robot(const uint& id) {
+std::shared_ptr<Robot> ChessboardHandle::friend_robot(const uint& id) {
     assert(initialed && "Chessboard uninitialized ERROR");
     std::string label = (faction == RED ? "R" + std::to_string(id) : "B" + std::to_string(id));
     return (*robots)[label];
 }
 
-inline std::shared_ptr<Robot> ChessboardHandle::enemy_robot(const uint& id) {
+std::shared_ptr<Robot> ChessboardHandle::enemy_robot(const uint& id) {
     assert(initialed && "Chessboard uninitialized ERROR");
     std::string label = (faction == RED ? "B" + std::to_string(id) : "R" + std::to_string(id));
     return (*robots)[label];
 }
 
-inline std::shared_ptr<Architecture> ChessboardHandle::friend_outpost() {
+std::shared_ptr<Architecture> ChessboardHandle::friend_outpost() {
     assert(initialed && "Chessboard uninitialized ERROR");
     if (faction == RED) {
         return (*architectures)["Red_Outpost"];
@@ -44,7 +44,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::friend_outpost() {
     }
 }
 
-inline std::shared_ptr<Architecture> ChessboardHandle::enemy_outpost() {
+std::shared_ptr<Architecture> ChessboardHandle::enemy_outpost() {
     assert(initialed && "Chessboard uninitialized ERROR");
     if (faction == BLUE) {
         return (*architectures)["Red_Outpost"];
@@ -53,7 +53,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::enemy_outpost() {
     }
 }
 
-inline std::shared_ptr<Architecture> ChessboardHandle::friend_base() {
+std::shared_ptr<Architecture> ChessboardHandle::friend_base() {
     assert(initialed && "Chessboard uninitialized ERROR");
     if (faction == RED) {
         return (*architectures)["Red_Base"];
@@ -62,7 +62,7 @@ inline std::shared_ptr<Architecture> ChessboardHandle::friend_base() {
     }
 }
 
-inline std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
+std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
     assert(initialed && "Chessboard uninitialized ERROR");
     if (faction == BLUE) {
         return (*architectures)["Red_Base"];

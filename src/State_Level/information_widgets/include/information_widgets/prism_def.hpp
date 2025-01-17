@@ -9,7 +9,6 @@
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "iw_interfaces/msg/prism.hpp"
-#include "rclcpp_action/client_goal_handle.hpp"
 #include "rm_decision_defs.hpp"
 
 namespace RMDecision {

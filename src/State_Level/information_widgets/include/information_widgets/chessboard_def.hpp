@@ -31,17 +31,17 @@ public:
     rclcpp::Time timestamp;
     bool initialed = false;
 
-    inline std::shared_ptr<Robot> friend_robot(const uint& id);
+    std::shared_ptr<Robot> friend_robot(const uint& id);
 
-    inline std::shared_ptr<Robot> enemy_robot(const uint& id);
+    std::shared_ptr<Robot> enemy_robot(const uint& id);
 
-    inline std::shared_ptr<Architecture> friend_outpost();
+    std::shared_ptr<Architecture> friend_outpost();
 
-    inline std::shared_ptr<Architecture> enemy_outpost();
+    std::shared_ptr<Architecture> enemy_outpost();
 
-    inline std::shared_ptr<Architecture> friend_base();
+    std::shared_ptr<Architecture> friend_base();
 
-    inline std::shared_ptr<Architecture> enemy_base();
+    std::shared_ptr<Architecture> enemy_base();
 
     void upgrate_from_message(const iw_interfaces::msg::Chessboard& msg);
 

@@ -1,8 +1,6 @@
 #include "sensing_unit/sensing_unit.hpp"
 
-using namespace RMDecision;
-
-SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_unit", options), chessboard_(Faction::UNKNOWN) {
+SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_unit", options), chessboard_(RMDecision::Faction::UNKNOWN) {
     std::string faction_str;
     this->declare_parameter<std::string>("faction");
 
@@ -12,13 +10,13 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
         return;
     }
 
-    Faction faction;
+    RMDecision::Faction faction;
     if (faction_str == "RED" || faction_str == "Red" || faction_str == "R" || faction_str == "red" || faction_str == "1") {
-        faction = RED;
+        faction = RMDecision::Faction::RED;
     } else if (faction_str == "BLUE" || faction_str == "Blue" || faction_str == "B" || faction_str == "blue" || faction_str == "2") {
-        faction = BLUE;
+        faction = RMDecision::Faction::BLUE;
     } else {
-        faction = UNKNOWN;
+        faction = RMDecision::Faction::UNKNOWN;
     }
     init_chessboard(faction);
 
@@ -59,20 +57,20 @@ SensingUnit::SensingUnit(const rclcpp::NodeOptions& options) : Node("observe_uni
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&SensingUnit::timer_callback, this), callback_group_);
 }
 
-void SensingUnit::init_chessboard(const Faction& faction) {
+void SensingUnit::init_chessboard(const RMDecision::Faction& faction) {
     chessboard_.faction = faction;
-    for (const auto& elem : DefaultInfo::robots) {
-        (*chessboard_.robots)[elem.first] = std::make_shared<Robot>(elem.second);
+    for (const auto& elem : RMDecision::DefaultInfo::robots) {
+        (*chessboard_.robots)[elem.first] = std::make_shared<RMDecision::Robot>(elem.second);
     }
-    init_map_declare<std::vector<double>, Terrain>(
-        RMDecision::DefaultInfo::terrains, *chessboard_.terrains, Terrain::array_to_terrain);
-    init_map_declare<std::vector<double>, Architecture>(
-        RMDecision::DefaultInfo::architecture, *chessboard_.architectures, Architecture::array_to_architecture);
+    init_map_declare<std::vector<double>, RMDecision::Terrain>(
+        RMDecision::DefaultInfo::terrains, *chessboard_.terrains, RMDecision::Terrain::array_to_terrain);
+    init_map_declare<std::vector<double>, RMDecision::Architecture>(
+        RMDecision::DefaultInfo::architecture, *chessboard_.architectures, RMDecision::Architecture::array_to_architecture);
 
-    name_objects<Robot>(*chessboard_.robots);
-    name_objects<Terrain>(*chessboard_.terrains);
-    name_objects<Architecture>(*chessboard_.architectures);
-    if (chessboard_.faction != UNKNOWN) {
+    name_objects<RMDecision::Robot>(*chessboard_.robots);
+    name_objects<RMDecision::Terrain>(*chessboard_.terrains);
+    name_objects<RMDecision::Architecture>(*chessboard_.architectures);
+    if (chessboard_.faction != RMDecision::Faction::UNKNOWN) {
         chessboard_.initialed = true;
     }
 }
@@ -86,7 +84,7 @@ void SensingUnit::all_robot_hp_callback(const rm_decision_interfaces::msg::AllRo
     if (chessboard_.initialed) {
         assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
     } else {
-        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.faction = static_cast<RMDecision::Faction>(msg->color);
         chessboard_.initialed = true;
     }
 
@@ -119,7 +117,7 @@ void SensingUnit::all_robot_hp_callback(const rm_decision_interfaces::msg::AllRo
 
 void SensingUnit::friend_location_callback(const rm_decision_interfaces::msg::FriendLocation::SharedPtr msg) {
     auto lambda = [&](uint id, double x, double y) {
-        chessboard_.friend_robot(id)->pose = PlaneCoordinate(x, y).to_pose_stamped(this->now());
+        chessboard_.friend_robot(id)->pose = RMDecision::PlaneCoordinate(x, y).to_pose_stamped(this->now());
     };
 
     lambda(1, msg->hero_x, msg->hero_y);
@@ -135,7 +133,7 @@ void SensingUnit::from_serial_callback(const rm_decision_interfaces::msg::FromSe
     if (chessboard_.initialed) {
         assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
     } else {
-        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.faction = static_cast<RMDecision::Faction>(msg->color);
         chessboard_.initialed = true;
     }
 
@@ -157,7 +155,7 @@ void SensingUnit::from_serial_callback(const rm_decision_interfaces::msg::FromSe
     prism_.game.game_start = msg->gamestart;
     prism_.game.coins = msg->remaining_gold_coin;
     prism_.game.projectile_allowance = msg->projectile_allowance_17mm;
-    prism_.call.target = PlaneCoordinate(msg->target_pos_x, msg->target_pos_y);
+    prism_.call.target = RMDecision::PlaneCoordinate(msg->target_pos_x, msg->target_pos_y);
     prism_.call.is_called = true;
 
     chessboard_.friend_robot(prism_.self.id)->hp = self_hp;
@@ -185,7 +183,7 @@ void SensingUnit::receive_serial_callback(const rm_decision_interfaces::msg::Rec
     if (chessboard_.initialed) {
         assert(msg->color == chessboard_.faction && "Faction Maching ERROR");
     } else {
-        chessboard_.faction = static_cast<Faction>(msg->color);
+        chessboard_.faction = static_cast<RMDecision::Faction>(msg->color);
         chessboard_.initialed = true;
     }
 
