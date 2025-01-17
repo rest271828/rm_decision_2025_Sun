@@ -1,0 +1,1 @@
+#include "rm_decision_macros/decision_node_regist_macro.hpp"

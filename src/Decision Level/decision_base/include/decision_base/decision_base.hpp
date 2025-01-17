@@ -1,3 +1,5 @@
+#pragma once
+
 #include "information_widgets/chessboard_def.hpp"
 #include "information_widgets/prism_def.hpp"
 #include "information_widgets/rm_decision_defs.hpp"

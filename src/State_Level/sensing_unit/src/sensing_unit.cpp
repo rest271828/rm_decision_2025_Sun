@@ -227,7 +227,3 @@ void SensingUnit::current_pose_callback(const geometry_msgs::msg::PoseStamped::S
     chessboard_.friend_robot(prism_.self.id)->pose = *msg;
     chessboard_.timestamp = this->now();
 }
-
-
-#include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(SensingUnit)
