@@ -1,6 +1,4 @@
 #include "sensing_unit/sensing_unit.hpp"
-#include "information_widgets/chessboard_def.hpp"
-#include "information_widgets/prism_def.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char **argv) {

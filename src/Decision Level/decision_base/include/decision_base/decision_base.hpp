@@ -21,6 +21,8 @@ private:
     rclcpp::Subscription<iw_interfaces::msg::Prism>::SharedPtr prism_sub_;
     rclcpp::Publisher<navigator_interfaces::msg::Navigate>::SharedPtr nav_pub_;
 
+    rclcpp::CallbackGroup::SharedPtr callback_group_;
+
     void chessboard_sub_callback(const iw_interfaces::msg::Chessboard::SharedPtr msg);
 
     void prism_sub_callback(const iw_interfaces::msg::Prism::SharedPtr msg);
