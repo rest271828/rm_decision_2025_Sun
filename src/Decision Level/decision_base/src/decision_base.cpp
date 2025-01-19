@@ -2,9 +2,8 @@
 
 using namespace RMDecision;
 
-DecisionBase::DecisionBase(uint selfId, std::string nodeName, const rclcpp::NodeOptions &options) 
-: Node(nodeName, options), chessboard_(Faction::UNKNOWN) {
-    
+DecisionBase::DecisionBase(uint selfId, std::string nodeName, const rclcpp::NodeOptions& options)
+    : Node(nodeName, options), chessboard_(Faction::UNKNOWN) {
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
     auto subOpt = rclcpp::SubscriptionOptions();
     auto pubOpt = rclcpp::PublisherOptions();
@@ -12,7 +11,7 @@ DecisionBase::DecisionBase(uint selfId, std::string nodeName, const rclcpp::Node
     pubOpt.callback_group = callback_group_;
 
     chessboard_sub_ = this->create_subscription<iw_interfaces::msg::Chessboard>(
-        "rm_decision/chessboard", 10, 
+        "rm_decision/chessboard", 10,
         std::bind(&DecisionBase::chessboard_sub_callback, this, std::placeholders::_1), subOpt);
     prism_sub_ = this->create_subscription<iw_interfaces::msg::Prism>(
         ("rm_decision/prism" + std::to_string(selfId)).c_str(), 10,
@@ -23,7 +22,7 @@ DecisionBase::DecisionBase(uint selfId, std::string nodeName, const rclcpp::Node
 
 void DecisionBase::chessboard_sub_callback(const iw_interfaces::msg::Chessboard::SharedPtr msg) {
     if (msg->initialed && rclcpp::Time(msg->timestamp) > chessboard_.timestamp) {
-        chessboard_.upgrate_from_message(*msg);
+        chessboard_.update_from_message(*msg);
     }
 }
 

@@ -71,17 +71,17 @@ std::shared_ptr<Architecture> ChessboardHandle::enemy_base() {
     }
 }
 
-void ChessboardHandle::upgrate_from_message(const iw_interfaces::msg::Chessboard& msg) {
+void ChessboardHandle::update_from_message(const iw_interfaces::msg::Chessboard& msg) {
     assert(initialed && "Chessboard uninitialized ERROR");
     timestamp = rclcpp::Time(msg.timestamp.sec, msg.timestamp.nanosec);
     for (const auto& robotMsg : msg.robots) {
         auto& robot = (*robots)[robotMsg.label];
-        robot->upgrate_from_message(robotMsg);
+        robot->update_from_message(robotMsg);
     }
 
     for (const auto& architectureMsg : msg.architectures) {
         auto& architecture = (*architectures)[architectureMsg.label];
-        architecture->upgrate_from_message(architectureMsg);
+        architecture->update_from_message(architectureMsg);
     }
 }
 

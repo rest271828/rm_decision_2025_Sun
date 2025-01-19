@@ -43,7 +43,7 @@ public:
 
     std::shared_ptr<Architecture> enemy_base();
 
-    void upgrate_from_message(const iw_interfaces::msg::Chessboard& msg);
+    void update_from_message(const iw_interfaces::msg::Chessboard& msg);
 
     iw_interfaces::msg::Chessboard to_message();
 };

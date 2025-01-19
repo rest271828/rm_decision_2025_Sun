@@ -17,7 +17,6 @@ namespace RMDecision {
 
 const double INF = 1e9;
 
-
 enum Faction { UNKNOWN,
                RED,
                BLUE };
@@ -165,7 +164,7 @@ public:
         double k2 = coeff2.first;
         double b1 = coeff1.second;
         double b2 = coeff2.second;
-        return - (b1 - b2) / (k1 - k2);
+        return -(b1 - b2) / (k1 - k2);
     }
 };
 
@@ -210,7 +209,7 @@ public:
         return msg;
     }
 
-    void upgrate_from_message(const iw_interfaces::msg::Robot& msg) {
+    void update_from_message(const iw_interfaces::msg::Robot& msg) {
         hp = msg.hp;
         level = msg.level;
         pose = msg.pose;
@@ -259,7 +258,7 @@ public:
         auto infinity = PlaneCoordinate(point.x, INF);
         uint intersect_count = 0;
         for (size_t i = 0; i + 1 < vertices_.size(); i++) {
-            if (PlaneCoordinate::intersect(point, infinity, vertices_[i], vertices_[i + 1])){
+            if (PlaneCoordinate::intersect(point, infinity, vertices_[i], vertices_[i + 1])) {
                 intersect_count++;
             }
         }
@@ -335,12 +334,12 @@ public:
         return msg;
     }
 
-    void upgrate_from_message(const iw_interfaces::msg::Architecture msg) {
+    void update_from_message(const iw_interfaces::msg::Architecture msg) {
         hp = msg.hp;
     }
 
     // bool contain(PlaneCoordinate point) {
-        
+
     // }
 };
 
