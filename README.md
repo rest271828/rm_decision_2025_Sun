@@ -190,6 +190,10 @@ public:
 ### insert
 
 #### 添加依赖
+```bash
 rosdep install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
+```
 #### 编译选项
+```bash
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+‵‵‵‵＼
