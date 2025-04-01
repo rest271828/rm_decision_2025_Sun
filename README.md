@@ -186,3 +186,10 @@ public:
 `Navigate`消息包括`geometry_msgs::msg::PoseStamped`类型的机器人的位姿和布尔值`instant`。`navigator`接收该消息后，将调用下层的导航组件使机器人到达指定地点。根据`instant`值的真假，机器人将决定执行接收到的新的导航信息时是取消之前的导航动作立即执行，还是完成之前的导航动作之后再执行接收到的新动作。
 
 理论上来说，设计决策层时，只需要了解以上信息就可以利用状态层和动作层的组件完成对上下层接口的对接。只需要充分利用好不同组件的特性，就可以更有逻辑和条理地利用场上信息作出决策。
+
+### insert
+
+#### 添加依赖
+rosdep install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
+#### 编译选项
+colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
